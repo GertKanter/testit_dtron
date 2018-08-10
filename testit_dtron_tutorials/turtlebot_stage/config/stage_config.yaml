@@ -1,0 +1,37 @@
+robots:
+    robot_0:
+        spread:
+           ip: "127.0.0.1"
+           port: "4803"
+           username: "robot_0"
+        dtron:
+           sync:
+              input: "robot_0_goto"
+              output: "robot_0_response"
+        goal: "/robot_0/move_base"
+        navigation_mode: "move_base"
+        waypoint_goal: "/robot_0/topological_navigation"
+    robot_1:
+        spread:
+           ip: "127.0.0.1"
+           port: "4803"
+           username: "robot_1"
+        dtron:
+           sync:
+              input: "robot_1_goto"
+              output: "robot_1_response"
+        goal: "/robot_1/move_base"
+        navigation_mode: "move_base"
+        waypoint_goal: "/robot_1/topological_navigation"
+    robot_2:
+        spread:
+           ip: "127.0.0.1"
+           port: "4803"
+           username: "robot_2"
+        dtron:
+           sync:
+              input: "robot_2_goto"
+              output: "robot_2_response"
+        goal: "/robot_2/move_base"
+        navigation_mode: "move_base"
+        waypoint_goal: "/robot_2/topological_navigation"

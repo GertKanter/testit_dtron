@@ -1,0 +1,6 @@
+<launch>
+<arg name="config" default="$(find dtron)/turtlebot/cfg/config.yaml"/> 
+ <include file="$(find testit)/launch/testit.launch">
+    <arg name="config" value="$(arg config)"/>
+  </include>
+</launch>

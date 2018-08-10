@@ -1,0 +1,87 @@
+tests:
+  - tag: "Scenario #1" # identifier for reporting
+    pipeline: "" # empty for any
+    source: "/testit_tests/04" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
+    launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+    oracle: "./testit_tests/04/oracle/oracle.py 3" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+    timeout: 600 # time in seconds for timeout (0 for no timeout)
+    timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+    bagMaxSplits: "" # empty = use default
+    bagDuration: "" # empty = use default
+configuration:
+  bringupSUT: "" # how to bring up a pipeline server/docker SUT (general case), you can use "[[]]" for replacing
+  bringupSUTDelay: 0 # duration to wait after command
+  bringupSUTTimeout: 1 # seconds (0 for no timeout, but you have to specify bringup_finish_trigger then or tests will not be run)
+  bringupSUTFinishTrigger: "-" # command to test whether startup is finished, "-" = no trigger
+  runSUT: "docker run --rm --net=rosnetwork --env ROS_HOSTNAME=[[masterHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[masterHost]] -dt testit_tb_sut:latest /bin/bash -c \"source /catkin_ws/devel/setup.bash && roslaunch robots_stage multiple_robots.launch && tail -f /dev/null\"" # run SUT 
+  runSUTDelay: 50 # duration to wait for SUT to come up (roscore initialization)
+  runSUTTimeout: 50
+  runSUTFinishTrigger: "-"
+  stopSUT: "docker kill [[masterHost]]"
+  stopSUTDelay: 0 # duration to wait after stopping the SUT
+  stopSUTTimeout: 5
+  stopSUTFinishTrigger: "-"
+  teardownSUT: "" # how to clean up after finishing (shut down server/docker) (general case)
+  teardownSUTDelay: 0 # duration to wait after teardown
+  teardownSUTTimeout: 5
+  teardownSUTFinishTrigger: "-"
+  bringupTestIt: "" # bring up the pipeline server (in the cloud for example)
+  bringupTestItDelay: 0 # duration to wait after command
+  bringupTestItTimeout: 1
+  bringupTestItFinishTrigger: "-"
+  runTestIt: "docker run --rm --volume=/catkin_ws/src/testit/dtron/turtlebot/testit_tests/:/testit_tests --net=rosnetwork --env ROS_VERSION=[[rosVersion]] --env ROS_HOSTNAME=[[testitHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testitHost]] -dt testit_tb_testit /bin/bash -c \"/catkin_ws/src/testit/dtron/turtlebot/scripts/run_stage_adapter.sh && tail -f /dev/null\"" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
+  runTestItDelay: 10 # duration to wait after command
+  runTestItTimeout: 10
+  runTestItFinishTrigger: "-"
+  stopTestIt: "docker kill [[testitHost]]" # general case pipeline stopping
+  stopTestItDelay: 0 # duration to wait after command
+  stopTestItTimeout: 5
+  stopTestItFinishTrigger: "-"
+  teardownTestIt: ""
+  teardownTestItDelay: 0 # duration to wait after command
+  teardownTestItTimeout: 5 # empty string = use default
+  teardownTestItFinishTrigger: "-" # command to test whether startup is finished, "-" = no trigger
+  bagEnabled: False # True=rosbag record, False=don't bag
+  bagMaxSplits: 5 # total bag duration = maxsplits*duration
+  bagDuration: 15 # seconds
+pipelines:
+  - tag: "Pipeline #1" # identifier for reporting
+    rosVersion: "lunar"
+    ssh: "-" # "-" means no ssh command wrapping, execute docker commands on localhost, bringup/teardown are not wrapped, run/stop + test commands are wrapped
+    masterHost: "sut1"
+    testitHost: "testit1"
+    masterIP: "-" # where SUT roscore is running (used if masterHost is not defined) ("-" means none)
+    testitIP: "-" # where TestIt docker container is running (used if testitHost is not defined) ("-" means none)
+    testItVolume: "$(rospack find dtron)/turtlebot/testit_tests/" # where TestIt volume is located in the pipeline (test scenarios + bags are stored there)
+    bringupSUT: "" # empty string = use default
+    bringupSUTDelay: ""
+    bringupSUTTimeout: "" # empty string = use default
+    bringupSUTFinishTrigger: "" # empty string = use default
+    runSUT: "" # empty string = use default
+    runSUTDelay: ""
+    runSUTTimeout: ""
+    runSUTFinishTrigger: ""
+    stopSUT: ""
+    stopSUTDelay: ""
+    stopSUTTimeout: ""
+    stopSUTFinishTrigger: ""
+    teardownSUT: "" # custom teardown for this pipeline
+    teardownSUTDelay: ""
+    teardownSUTTimeout: "" # empty string = use default
+    teardownSUTFinishTrigger: "" # empty string = use default
+    bringupTestIt: "" # empty string = use default
+    bringupTestItDelay: ""
+    bringupTestItTimeout: "" # empty string = use default
+    bringupTestItFinishTrigger: "" # empty string = use default
+    runTestIt: "" # empty string = use default
+    runTestItDelay: ""
+    runTestItTimeout: ""
+    runTestItFinishTrigger: ""
+    stopTestIt: ""
+    stopTestItDelay: ""
+    stopTestItTimeout: ""
+    stopTestItFinishTrigger: ""
+    teardownTestIt: "" # custom teardown for this pipeline
+    teardownTestItDelay: "" # duration to wait after command
+    teardownTestItTimeout: "" # empty string = use default
+    teardownTestItFinishTrigger: "" # empty string = use default

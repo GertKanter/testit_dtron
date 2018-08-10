@@ -1,0 +1,46 @@
+robot_0:
+ node_map: {'1': ChargingPoint, '3': WayPoint1, '5': WayPoint2, '7': WayPoint3, '9': WayPoint4,
+  '11': WayPoint5, '13': WayPoint6, '15': WayPoint7, '17': WayPoint8, '19': WayPoint9}
+ nodes:
+  ChargingPoint: {x: 28.6, y: 4.0}
+  WayPoint1: {x: 28.3, y: 6.37}
+  WayPoint2: {x: 26.7, y: 6.47}
+  WayPoint3: {x: 24.1, y: 6.52}
+  WayPoint4: {x: 25.8, y: 8.96}
+  WayPoint5: {x: 24.2, y: 10.6}
+  WayPoint6: {x: 24.4, y: 14.2}
+  WayPoint7: {x: 26.0, y: 14.0}
+  WayPoint8: {x: 26.0, y: 14.8}
+  WayPoint9: {x: 29.3, y: 12.0}
+
+robot_1:
+ node_map: {'1': ChargingPoint, '3': WayPoint1, '5': WayPoint2, '7': WayPoint3, '9': WayPoint4,
+  '11': WayPoint5, '13': WayPoint6, '15': WayPoint7, '17': WayPoint8, '19': WayPoint9,
+  '21': WayPoint10, '23': WayPoint11}
+ nodes:
+  ChargingPoint: {x: 31.0, y: 16.0}
+  WayPoint1: {x: 28.7, y: 17.6}
+  WayPoint2: {x: 29.0, y: 17.1}
+  WayPoint3: {x: 32.0, y: 16.9}
+  WayPoint4: {x: 32.1, y: 14.3}
+  WayPoint5: {x: 30.9, y: 14.2}
+  WayPoint6: {x: 27.8, y: 14.1}
+  WayPoint7: {x: 28.0, y: 11.5}
+  WayPoint8: {x: 29.5, y: 10.8}
+  WayPoint9: {x: 31.0, y: 10.2}
+  WayPoint10: {x: 32.6, y: 11.6}
+  WayPoint11: {x: 34.0, y: 15.2}
+  
+robot_2:
+ node_map: {'1': ChargingPoint, '3': WayPoint1, '5': WayPoint2, '7': WayPoint3, '9': WayPoint4,
+  '11': WayPoint5, '13': WayPoint6, '15': WayPoint7, '17': WayPoint8}
+ nodes:
+  ChargingPoint: {x: 30.0, y: 14.0}
+  WayPoint1: {x: 33.3, y: 12.5}
+  WayPoint2: {x: 37.9, y: 13.9}
+  WayPoint3: {x: 36.8, y: 11.9}
+  WayPoint4: {x: 38.7, y: 10.3}
+  WayPoint5: {x: 34.1, y: 10.2}
+  WayPoint6: {x: 33.0, y: 7.1}
+  WayPoint7: {x: 29.4, y: 6.78}
+  WayPoint8: {x: 28.6, y: 4.57}

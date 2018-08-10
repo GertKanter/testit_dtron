@@ -1,0 +1,13 @@
+<launch>
+ <rosparam command="load" file="$(find dtron)/config/stage_output_model.yaml"/>
+ <rosparam command="load" file="$(find dtron)/config/stage_config.yaml"/>
+   <node name="test_adapter_0"  pkg="dtron" type="stage_adapter" output="screen" args="test_adapter_0">
+      <param name="robot_name" type="str" value="robot_0" />
+   </node>
+  <node name="test_adapter_1" pkg="dtron" type="stage_adapter" output="screen" args="test_adapter_1">
+      <param name="robot_name" type="str" value="robot_1" />
+   </node>
+  <node name="test_adapter_2" pkg="dtron" type="stage_adapter" output="screen" args="test_adapter_2">
+      <param name="robot_name" type="str" value="robot_2" />
+   </node>
+</launch>
