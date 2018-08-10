@@ -1,0 +1,7 @@
+<launch>
+   <arg name="config_file" default="config.yaml"/>
+   <node name="test_adapter" pkg="dtron" type="test_adapter" output="screen">
+      <rosparam command="load" file="/catkin_ws/dtronpack/generateModelFromTmap/examples/map_model.yaml"/>
+      <rosparam command="load" file="$(find dtron)/config/$(arg config_file)"/>
+   </node>
+</launch>

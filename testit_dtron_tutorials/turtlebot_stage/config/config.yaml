@@ -1,0 +1,11 @@
+spread:
+   ip: "127.0.0.1"
+   port: "4803"
+   username: "SUT"
+dtron:
+   sync:
+      input: "goto"
+      output: "response"
+goal: "/move_base"
+waypoint_goal: "/topological_navigation"
+navigation_mode: "move_base"
