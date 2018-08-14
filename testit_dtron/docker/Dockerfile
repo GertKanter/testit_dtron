@@ -2,9 +2,9 @@
 FROM testitros/testit:latest
 LABEL Description="TestIt! DTRON extension Docker image"
 RUN apt-get update && \
-#install autoconf and scons
+# install autoconf and scons
 	apt-get install -y autoconf scons && \
-#install Java 8, Lunar packages, mongodb
+# install Java 8, Lunar packages, mongodb
 	apt-get install software-properties-common -y && \
 	add-apt-repository ppa:webupd8team/java -y && \
 	apt-get update && \
@@ -35,12 +35,12 @@ RUN apt-get update && \
 	rm -r /catkin_ws/src/fremen && \
 	git clone https://github.com/GT-RAIL/robot_pose_publisher.git && \
 	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make" && \
-#configure Spread
+# configure Spread
 	useradd spread && usermod -a -G spread spread && \
 	mkdir -m 777 /var/run/spread && \
 	echo 'export PATH=$PATH:/catkin_ws/spread/sbin' >> ~/.bashrc && \
 	echo 'source /opt/ros/lunar/setup.bash' >> ~/.bashrc && \
-#install required architecture for running TRON
+# install required architecture for running TRON
 	dpkg --add-architecture i386 && \
 	apt-get update && \
 	apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 && \
