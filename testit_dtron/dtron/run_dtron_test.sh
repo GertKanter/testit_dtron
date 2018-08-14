@@ -11,4 +11,4 @@ if [ "$#" -ne 1 ]; then
     exit
 fi
 
-java -jar dtron-4.14.jar -f $1 -u 100000 -o 400000 -P eager 
+java -jar $(rospack find testit_dtron)/dtron/dtron-4.14.jar -f $1 -u 100000 -o 400000 -P eager 

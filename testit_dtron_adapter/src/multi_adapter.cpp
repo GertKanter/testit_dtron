@@ -186,8 +186,18 @@ namespace dtron_test_adapter {
 	void TestAdapter::sendMessage(const char* group, std::map<std::string, int> args) {
 		Sync response;
 		response.set_name(group);
+                int i = 0;
+                for (std::map<std::string, int>::const_iterator it = args.begin(); it != args.end(); ++it)
+                {
+                  Variable* var = response.add_variables();
+                  ROS_INFO_STREAM("Setting name = " << it->first << "  value = " << it->second << " variables_size = " << response.variables_size());
+                  response.mutable_variables(i)->set_name(it->first);
+                  response.mutable_variables(i)->set_value(it->second);
+                  i++;
+                }
 		std::string data = "";
 		response.SerializeToString(&data);
+                ROS_INFO_STREAM("data size = " << data.size());
 		spreadAdapter_.SendMessage(group, data);
 	}
 
@@ -216,14 +226,14 @@ class Adapter {
 		actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_;
 		std::map<std::string, std::string> node_map_;
 		ros::NodeHandle nh_;
-		std::string sync_input_;
+		std::vector<std::string> sync_input_;
 		std::string sync_output_;
 		std::string navigation_mode_;
 		std::string robot_name_;
 	public:
 		Adapter(ros::NodeHandle nh,
 				std::string goal_topic,
-				std::string sync_input,
+				std::vector<std::string> sync_input,
 				std::string sync_output,
 				std::string navigation_mode,
 				std::string waypoint_goal_topic,
@@ -259,59 +269,97 @@ class Adapter {
 	}
 
 	void receiveMessage(std::string name, std::map<std::string, int> args) {
-		ROS_INFO("Received a message - %s!", name.c_str());
-		std::string state = boost::lexical_cast<std::string>(args["state"]);
-		std::string node_name = node_map_[state];
-		std::string robot_name = robot_name_;
-		if(node_name != "") {
-		if (navigation_mode_ != "waypoint") {
-			move_base_msgs::MoveBaseGoal goal;
-			double x, y;
-			nh_.getParam("/" + robot_name + "/nodes/" + node_name + "/x", x);
-			nh_.getParam("/" + robot_name + "/nodes/" + node_name + "/y", y);
-			//std::cout <<node_name << " X: " << x << "Y: " << y << "\n";
-			goal.target_pose.header.frame_id = "/map";
-			goal.target_pose.pose.position.x = x;
-			goal.target_pose.pose.position.y = y;
-			goal.target_pose.pose.position.z = 0;
-			goal.target_pose.pose.orientation.x = 0;
-			goal.target_pose.pose.orientation.y = 0;
-			goal.target_pose.pose.orientation.z = 0;
-			goal.target_pose.pose.orientation.w = 1;
-			ROS_INFO("Goal. Node %s, x: %.3f  y: %.3f", node_name.c_str(), x, y);
-			if (ac_movebase_.isServerConnected()) {
-				ac_movebase_.sendGoal(goal);
-				ac_movebase_.waitForResult();
-				actionlib::SimpleClientGoalState state = ac_movebase_.getState();
-				ROS_INFO("Action finished: %s", state.toString().c_str());
-				if (state == actionlib::SimpleClientGoalState::SUCCEEDED) {
-					testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
-				} else {
-					ROS_ERROR("Action result was not SUCCEEDED!");
-				}
-			} else {
-				ROS_ERROR("Action server not connected!");
- 			}
-		} else {
-			topological_navigation::GotoNodeGoal goal;
-			goal.target = node_name;
-			ROS_INFO("Goal. Node: %s", node_name.c_str());
-			//std::cout << node_name << "\n";
-			if (ac_topological_.isServerConnected()) {
-				ac_topological_.sendGoal(goal);
-				ac_topological_.waitForResult();
-				actionlib::SimpleClientGoalState state = ac_topological_.getState();
-				ROS_INFO("Action finished: %s", state.toString().c_str());
-				if (state == actionlib::SimpleClientGoalState::SUCCEEDED) {
-					testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
-				} else {
-					ROS_ERROR("Action result was not SUCCEEDED!");
-				}
-			} else {
-              ROS_ERROR("Action server not connected!");
+		ROS_INFO_STREAM("Received a message with name '" << name << "'");
+                if (name.find("goto") != std::string::npos)
+                {
+		  // "goto" sync
+                  ROS_INFO("goto sync handler!");
+		  std::string state = boost::lexical_cast<std::string>(args["state"]);
+                  ROS_INFO_STREAM("state = " << state);
+		  std::string node_name = node_map_[state];
+		  std::string robot_name = robot_name_;
+		  if(node_name != "")
+                  {
+		    if (navigation_mode_ != "waypoint")
+                    {
+		      move_base_msgs::MoveBaseGoal goal;
+		      double x, y;
+		      nh_.getParam("/" + robot_name + "/nodes/" + node_name + "/x", x);
+		      nh_.getParam("/" + robot_name + "/nodes/" + node_name + "/y", y);
+		      //std::cout <<node_name << " X: " << x << "Y: " << y << "\n";
+		      goal.target_pose.header.frame_id = "/map";
+		      goal.target_pose.pose.position.x = x;
+		      goal.target_pose.pose.position.y = y;
+		      goal.target_pose.pose.position.z = 0;
+		      goal.target_pose.pose.orientation.x = 0;
+		      goal.target_pose.pose.orientation.y = 0;
+		      goal.target_pose.pose.orientation.z = 0;
+		      goal.target_pose.pose.orientation.w = 1;
+		      ROS_INFO("Goal. Node %s, x: %.3f  y: %.3f", node_name.c_str(), x, y);
+		      if (ac_movebase_.isServerConnected())
+                      {
+		        ac_movebase_.sendGoal(goal);
+		        ac_movebase_.waitForResult();
+			actionlib::SimpleClientGoalState state = ac_movebase_.getState();
+			ROS_INFO("Action finished: %s", state.toString().c_str());
+			if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+                        {
+			  testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
 			}
-		}
-	   }
+                        else
+                        {
+			  ROS_ERROR("Action result was not SUCCEEDED!");
+			}
+		      }
+                      else
+                      {
+		        ROS_ERROR("Action server not connected!");
+		      }
+		    }
+                    else
+                    {
+		      topological_navigation::GotoNodeGoal goal;
+		      goal.target = node_name;
+		      ROS_INFO("Goal. Node: %s", node_name.c_str());
+		      //std::cout << node_name << "\n";
+		      if (ac_topological_.isServerConnected())
+                      {
+		        ac_topological_.sendGoal(goal);
+			ac_topological_.waitForResult();
+			actionlib::SimpleClientGoalState state = ac_topological_.getState();
+			ROS_INFO("Action finished: %s", state.toString().c_str());
+			if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+                        {
+			  testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
+			}
+                        else
+                        {
+			  ROS_ERROR("Action result was not SUCCEEDED!");
+			}
+		      }
+                      else
+                      {
+		        ROS_ERROR("Action server not connected!");
+                      }		
+		    }
+                  }
+                  else
+                  {
+                    ROS_WARN("Unknown state!");
+                  }
+                }
+                else if (name.find("object_detect") != std::string::npos)
+                {
+		  // "object_detect" sync
+                  ROS_INFO("object_detect sync handler!");
+                  std::map<std::string, int> vars;
+                  vars["value"] = 1;
+	          testAdapter_->sendMessage(sync_output_.c_str(), vars);
+                }
+                else
+                {
+                  ROS_ERROR("Unhandled sync type!");
+                }
 	}
 };
 
@@ -323,9 +371,12 @@ int main(int argc, char** argv) {
 		nh.getParam("/" + test_adapter + "/robot_name", robot_name);
 		GOOGLE_PROTOBUF_VERIFY_VERSION;
 		std::vector<const char*> groups;
-		std::string sync_input;
+		std::vector<std::string> sync_input;
 		nh.getParam("/robots/"+robot_name+"/dtron/sync/input", sync_input);
-		groups.push_back(sync_input.c_str());
+                for (std::vector<std::string>::const_iterator it = sync_input.begin(); it != sync_input.end(); ++it)
+                {
+		  groups.push_back(it->c_str());
+                }
 		std::string sync_output;
 		nh.getParam("/robots/"+robot_name+"/dtron/sync/output", sync_output);
 		groups.push_back(sync_output.c_str());
