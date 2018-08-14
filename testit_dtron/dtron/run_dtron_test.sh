@@ -4,7 +4,7 @@
 
 # TRON_HOME environment variable pointing to un-zipped TRON distribution downloaded from: http://people.cs.aau.dk/~marius/tron
 # 
-export TRON_HOME=../tron/uppaal-tron-1.5-linux
+export TRON_HOME=$(rospack find testit_dtron)/tron/uppaal-tron-1.5-linux
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: run_dtron_test.sh uppaal_model_xml_path"
