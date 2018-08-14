@@ -18,10 +18,10 @@ RUN apt-get update && \
 	mkdir /opt/ros/mongodb_store && \
 	apt-get install -y ros-lunar-navfn && \
 	apt-get install -y ros-lunar-costmap-2d && \
-#clone example for TestIt and STRANDS packages
-	git clone https://github.com/arturgummel/dtrontestit.git /catkin_ws/src/testit/dtron && \
-	git clone https://github.com/arturgummel/dtronpack.git /catkin_ws/dtronpack && \
-	/bin/bash -c "/catkin_ws/src/testit/dtron/scripts/build_stuff.sh" && \
+# install Spread and Google Protobuf
+	git clone https://github.com/GertKanter/testit_dtron /catkin_ws/src/testit_dtron/ -b develop && \
+	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
+# clone STRANDS packages
 	cd /catkin_ws/src && \
 	git clone https://github.com/strands-project/strands_navigation.git && \
 	git clone https://github.com/strands-project/mongodb_store.git && \
@@ -40,20 +40,6 @@ RUN apt-get update && \
 	mkdir -m 777 /var/run/spread && \
 	echo 'export PATH=$PATH:/catkin_ws/spread/sbin' >> ~/.bashrc && \
 	echo 'source /opt/ros/lunar/setup.bash' >> ~/.bashrc && \
-#install docker
-	apt-get update && \
-	apt-get -y install apt-transport-https \
-	ca-certificates \
-	curl \
-	gnupg2 \
-	software-properties-common && \
-	curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
-	add-apt-repository \
-	"deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-	$(lsb_release -cs) \
-	stable" && \
-	apt-get update && \
-	apt-get -y install docker-ce && \
 #install required architecture for running TRON
 	dpkg --add-architecture i386 && \
 	apt-get update && \
@@ -70,3 +56,4 @@ CMD bash
 #You will need to accept the license!
 #unzip uppaal-tron-1.5-linux.zip in dtronpack directory:
 #cd /catkin_ws/dtronpack && unzip uppaal-tron-1.5-linux.zip
+
