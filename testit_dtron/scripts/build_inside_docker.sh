@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd /catkin_ws
 
 CURDIR=`pwd`
