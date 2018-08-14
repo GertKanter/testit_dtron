@@ -1,0 +1,1 @@
+This package is designed to be built inside the TestIt DTRON Docker container (not as a stand-alone package) with prerequisites installed to specific paths.

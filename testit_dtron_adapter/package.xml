@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>testit_dtron_adapter</name>
+  <version>0.0.1</version>
+  <description>The testit_dtron_adaper package</description>
+
+  <maintainer email="gert.kanter@ttu.ee">Gert Kanter</maintainer>
+
+  <license>BSD</license>
+
+
+  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- <url type="website">http://wiki.ros.org/spread_test</url> -->
+
+  <author email="gert.kanter@ttu.ee">Gert Kanter</author>
+  <author email="artur.gummel@ttu.ee">Artur Gummel</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>Spread</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>std_msgs</build_depend>  
+  <build_depend>move_base_msgs</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>topological_navigation</build_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>move_base_msgs</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>topological_navigation</exec_depend>
+
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
