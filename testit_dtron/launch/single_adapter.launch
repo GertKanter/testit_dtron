@@ -1,0 +1,6 @@
+<launch>
+   <arg name="id"/>
+   <node name="test_adapter_$(arg id)"  pkg="testit_dtron_adapter" type="multi_adapter" output="screen" args="test_adapter_$(arg id)">
+      <param name="robot_name" type="str" value="robot_$(arg id)" />
+   </node>
+</launch>

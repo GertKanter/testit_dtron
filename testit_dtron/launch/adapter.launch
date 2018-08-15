@@ -1,0 +1,13 @@
+<launch>
+  <arg name="num_adapters" default="1"/>
+  <group if="$(eval arg('num_adapters') >= 1)">
+    <include file="$(find testit_dtron)/launch/single_adapter.launch">
+      <arg name="id" value="0"/>
+    </include>
+  </group>
+  <group if="$(eval arg('num_adapters') >= 2)">
+    <include file="$(find testit_dtron)/launch/single_adapter.launch">
+      <arg name="id" value="1"/>
+    </include>
+  </group>
+</launch>
