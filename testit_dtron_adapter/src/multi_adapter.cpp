@@ -7,6 +7,7 @@
 #include <boost/thread.hpp>
 #include <boost/function.hpp>
 #include "sp.h"
+#include <tf/tf.h>
 
 #include <move_base_msgs/MoveBaseAction.h>
 #include <topological_navigation/GotoNodeAction.h>
@@ -366,6 +367,48 @@ class Adapter {
                   else
                   {
                     ROS_WARN("Unknown state!");
+                  }
+                }
+                else if (name.find("moveto") != std::string::npos)
+                {
+		  // "moveto" sync
+                  ROS_INFO("moveto sync handler!");
+		  int x = boost::lexical_cast<int>(args["x"]);
+		  int y = boost::lexical_cast<int>(args["y"]);
+		  int a = boost::lexical_cast<int>(args["a"]);
+	          move_base_msgs::MoveBaseGoal goal;
+                  double dx, dy, da;
+                  dx = ((double)x) / 10.0;
+                  dy = ((double)y) / 10.0;
+                  da = ((double)a) / 10.0;
+	          goal.target_pose.header.frame_id = "/map";
+	          goal.target_pose.pose.position.x = dx;
+	          goal.target_pose.pose.position.y = dy;
+	          goal.target_pose.pose.position.z = 0;
+                  tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, da);
+                  tf::quaternionTFToMsg(q, goal.target_pose.pose.orientation);
+	          ROS_INFO("Goal x: %.2f  y: %.2f  a: %.2f", dx, dy, da);
+                  ROS_INFO_STREAM("Goal quaternion = " << q);
+                  if (ac_movebase_.isServerConnected())
+                  {
+                    ac_movebase_.sendGoal(goal);
+                    ac_movebase_.waitForResult();
+                    actionlib::SimpleClientGoalState state = ac_movebase_.getState();
+                    ROS_INFO("Action finished: %s", state.toString().c_str());
+                    if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+                    {
+                      std::map<std::string, int> vars;
+                      vars["value"] = 1; // always return value=1
+                      testAdapter_->sendMessage(sync_output_.c_str(), vars);
+                    }
+                    else
+                    {
+                      ROS_ERROR("Action result was not SUCCEEDED!");
+                    }
+                  }
+                  else
+                  {
+                    ROS_ERROR("Action server not connected!");
                   }
                 }
                 else if (name.find("object_detect") != std::string::npos)
