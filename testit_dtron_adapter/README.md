@@ -18,7 +18,9 @@ i_robot_0_moveto_x = 10
 i_robot_0_moveto_y = 15
 i_robot_0_moveto_a = 16
 ```
-Then we can call the sync channel
+This will give the robot the goal `x = 1.0 (meters)`, `y = 1.5 (meters)` and `a = 1.6 (radians)`.
+
+Then we can call the sync channel:
 ```
 i_robot_0_moveto!
 ```
