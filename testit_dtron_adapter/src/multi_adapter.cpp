@@ -11,6 +11,7 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <topological_navigation/GotoNodeAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <std_msgs/Bool.h>
 
 
 struct SpreadMessage {
@@ -230,6 +231,9 @@ class Adapter {
 		std::string sync_output_;
 		std::string navigation_mode_;
 		std::string robot_name_;
+                std::string object_detector_topic_;
+                ros::Subscriber object_detector_sub_;
+                bool object_detected_;
 	public:
 		Adapter(ros::NodeHandle nh,
 				std::string goal_topic,
@@ -237,14 +241,17 @@ class Adapter {
 				std::string sync_output,
 				std::string navigation_mode,
 				std::string waypoint_goal_topic,
-				std::string robot_name) :
+				std::string robot_name,
+                                std::string object_detector_topic) :
 		ac_movebase_(goal_topic, true),
 		ac_topological_(waypoint_goal_topic, true),
 		nh_(nh),
 		sync_input_(sync_input),
 		sync_output_(sync_output),
 		navigation_mode_(navigation_mode),
-		robot_name_(robot_name) {
+		robot_name_(robot_name),
+                object_detector_topic_(object_detector_topic),
+                object_detected_(false) {
 			ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
 			nh.getParam("/" + robot_name_ + "/node_map", node_map_);
 			ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
@@ -261,8 +268,17 @@ class Adapter {
 						ROS_ERROR("Unable to connect to topological_navigation action server!");
 					}
 			}
+                        // Subscribe to topics
+                        object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
 			ROS_INFO("Adapter is ready for use!");
 		}
+
+        void objectDetectorCallback(const std_msgs::Bool::ConstPtr& msg) {
+          if (msg->data)
+            object_detected_ = true;
+          else
+            object_detected_ = false;
+        }
 
 	void setTestAdapter(dtron_test_adapter::TestAdapter testAdapter) {
 		testAdapter_ = &testAdapter;
@@ -304,7 +320,9 @@ class Adapter {
 			ROS_INFO("Action finished: %s", state.toString().c_str());
 			if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
                         {
-			  testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
+                          std::map<std::string, int> vars;
+                          vars["value"] = 1; // always return value=1
+			  testAdapter_->sendMessage(sync_output_.c_str(), vars);
 			}
                         else
                         {
@@ -330,7 +348,9 @@ class Adapter {
 			ROS_INFO("Action finished: %s", state.toString().c_str());
 			if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
                         {
-			  testAdapter_->sendMessage(sync_output_.c_str(), std::map<std::string, int>());
+                          std::map<std::string, int> vars;
+                          vars["value"] = 1; // always return value=1
+			  testAdapter_->sendMessage(sync_output_.c_str(), vars);
 			}
                         else
                         {
@@ -353,7 +373,10 @@ class Adapter {
 		  // "object_detect" sync
                   ROS_INFO("object_detect sync handler!");
                   std::map<std::string, int> vars;
-                  vars["value"] = 1;
+                  if (object_detected_)
+                    vars["value"] = 2; // detected == 2
+                  else
+                    vars["value"] = 1; // not detected == 1
 	          testAdapter_->sendMessage(sync_output_.c_str(), vars);
                 }
                 else
@@ -369,6 +392,11 @@ int main(int argc, char** argv) {
 		std::string test_adapter = argv[1];
 		std::string robot_name;
 		nh.getParam("/" + test_adapter + "/robot_name", robot_name);
+                if (robot_name == "")
+                {
+                  ROS_ERROR("Parameters not loaded, unable to launch adapter!");
+                  return 1;
+                }
 		GOOGLE_PROTOBUF_VERIFY_VERSION;
 		std::vector<const char*> groups;
 		std::vector<std::string> sync_input;
@@ -384,18 +412,25 @@ int main(int argc, char** argv) {
 		nh.getParam("/robots/"+robot_name+"/goal", goal_topic);
 		std::string waypoint_goal_topic;
 		nh.getParam("/robots/"+robot_name+"/waypoint_goal", waypoint_goal_topic);
+		std::string object_detector_topic;
+		nh.param<std::string>("/robots/"+robot_name+"/object_detector", object_detector_topic, "object_detector");
 		std::string ip;
 		std::string port;
 		std::string username;
 		nh.getParam("/robots/"+robot_name+"/spread/ip", ip);
 		nh.getParam("/robots/"+robot_name+"/spread/port", port);
 		nh.getParam("/robots/"+robot_name+"/spread/username", username);
+                if (ip == "" || port == "" || username == "")
+                {
+                  ROS_ERROR("Spread parameters not configured, unable to launch adapter!");
+                  return 1;
+                }
 		std::string navigation_mode;
 		nh.getParam("/robots/"+robot_name+"/navigation_mode", navigation_mode);
-		Adapter adapter(nh, goal_topic, sync_input, sync_output, navigation_mode, waypoint_goal_topic, robot_name);
+		Adapter adapter(nh, goal_topic, sync_input, sync_output, navigation_mode, waypoint_goal_topic, robot_name, object_detector_topic);
 		dtron_test_adapter::TestAdapter testAdapter(nh,  (port + "@" + ip).c_str(), username.c_str(), groups, boost::bind(&Adapter::receiveMessage, &adapter, _1, _2));
 		adapter.setTestAdapter(testAdapter);
-		ROS_INFO("Test adapter is running!");
+		ROS_INFO("Test adapter running...");
 		
 		ros::Rate r(20);
 		while (nh.ok()) {
