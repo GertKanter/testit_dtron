@@ -1,0 +1,9 @@
+<launch>
+  <!-- THIS FILE IS LAUNCHED INSIDE THE TESTIT DOCKER CONTAINER -->
+  <!-- (adapters are launched inside TestIt containers) -->
+  <arg name="waypoints" />
+  <rosparam command="load" file="$(arg waypoints)"/>
+  <rosparam command="load" file="$(find testit_dtron_tutorials)/turtlebot_stage/cfg/test_adapter.yaml"/>
+
+  <node name="test_adapter_1"  pkg="testit_dtron_adapter" type="test_adapter" output="screen" args="robot_0" />
+</launch>

@@ -32,6 +32,7 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
+# Author: Gert Kanter
 # Author: Artur Gummel
 
 import roslib
@@ -55,7 +56,7 @@ def goalCallback(data, waypointX, waypointY):
 	y = float(data.pose.position.y)
 	rospy.loginfo('Current goal X: %f Y: %f', x, y)
 	if waypointX - 0.1 <= x <= waypointX + 0.1 and waypointY - 0.1 <= y <= waypointY + 0.1:
-		msgResult = rospy.wait_for_message("/move_base/result", MoveBaseActionResult)
+		msgResult = rospy.wait_for_message("/robot_0/move_base/result", MoveBaseActionResult)
 		reachedLocation = resultCallback(msgResult)
 		if reachedLocation:
 			rospy.loginfo("WayPoint x: %f y: %f reached successfully", x, y)
@@ -73,7 +74,7 @@ if __name__ == "__main__":
 	waypointX = float(sys.argv[1])
 	waypointY = float(sys.argv[2])
 	while not rospy.is_shutdown():
-		msg = rospy.wait_for_message("/move_base/current_goal", PoseStamped)
+		msg = rospy.wait_for_message("/robot_0/move_base_node/current_goal", PoseStamped)
 		result = goalCallback(msg, waypointX, waypointY)
 		rospy.loginfo("GOT RETURN STATEMENT %d", result)
 		if result == 0:

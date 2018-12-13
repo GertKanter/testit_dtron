@@ -1,39 +1,58 @@
 tests:
   - tag: "Scenario #1" # identifier for reporting
     pipeline: "" # empty for any
-    source: "/testit_tests/01" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
-    launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
-    oracle: "./testit_tests/01/oracle/oracle.py 16.646 21.344" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
-    timeout: 300 # time in seconds for timeout (0 for no timeout)
+    verbose: True # set to True for more verbose information
+    source: "/testit/testit_tests/tests/01" # test scenario source directory (BehaviorTree.CPP, SMACH state machine, UPPAAL model etc) inside TestIt docker container
+    launch: "(roslaunch testit_dtron_tutorials testit_adapter.launch waypoints:=\"/testit/testit_tests/fixtures/01/waypoints.yaml\" &); (sleep 10 && rosrun testit_dtron run_dtron_test.sh /testit/testit_tests/fixtures/01/model.xml)" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+    oracle: "/testit/testit_tests/tests/01/oracle/oracle.py 24.1 6.52" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+    timeout: 60 # time in seconds for timeout (0 for no timeout)
     timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
     bagMaxSplits: "" # empty = use default
     bagDuration: "" # empty = use default
-  - tag: "Scenario #2" # identifier for reporting
-    pipeline: "" # empty for any
-    source: "/testit_tests/01" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
-    launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
-    oracle: "./testit_tests/01/oracle/oracle.py 25.226 27.470" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
-    timeout: 1200 # time in seconds for timeout (0 for no timeout)
-    timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
-    bagMaxSplits: "" # empty = use default
-    bagDuration: "" # empty = use default    
-  - tag: "Scenario #3" # identifier for reporting
-    pipeline: "" # empty for any
-    source: "/testit_tests/02" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
-    launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
-    oracle: "./testit_tests/02/oracle/oracle.py 20" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
-    timeout: 1800 # time in seconds for timeout (0 for no timeout)
-    timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
-    bagMaxSplits: "" # empty = use default
-    bagDuration: "" # empty = use default
+  #- tag: "Scenario #2" # identifier for reporting
+  #  pipeline: "" # empty for any
+  #  source: "/testit/testit_tests/01" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
+  #  launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+  #  oracle: "./testit/testit_tests/01/oracle/oracle.py 25.226 27.470" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+  #  timeout: 1200 # time in seconds for timeout (0 for no timeout)
+  #  timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+  #  bagMaxSplits: "" # empty = use default
+  #  bagDuration: "" # empty = use default    
+  #- tag: "Scenario #3" # identifier for reporting
+  #  pipeline: "" # empty for any
+  #  source: "/testit/testit_tests/02" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
+  #  launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+  #  oracle: "./testit/testit_tests/02/oracle/oracle.py 20" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+  #  timeout: 1800 # time in seconds for timeout (0 for no timeout)
+  #  timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+  #  bagMaxSplits: "" # empty = use default
+  #  bagDuration: "" # empty = use default
+  #- tag: "Scenario #4" # identifier for reporting
+  #  pipeline: "" # empty for any
+  #  source: "/testit/testit_tests/03" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
+  #  launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+  #  oracle: "./testit/testit_tests/03/oracle/oracle.py WayPoint25" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+  #  timeout: 1800 # time in seconds for timeout (0 for no timeout)
+  #  timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+  #  bagMaxSplits: "" # empty = use default
+  #  bagDuration: "" # empty = use default
+  #- tag: "Scenario #5" # identifier for reporting
+  #  pipeline: "" # empty for any
+  #  source: "/testit/testit_tests/04" # test scenario source directory (SMACH state machine, UPPAAL model etc) inside TestIt docker container
+  #  launch: "" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+  #  oracle: "./testit/testit_tests/04/oracle/oracle.py 3" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+  #  timeout: 600 # time in seconds for timeout (0 for no timeout)
+  #  timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+  #  bagMaxSplits: "" # empty = use default
+  #  bagDuration: "" # empty = use default
 configuration:
   bringupSUT: "" # how to bring up a pipeline server/docker SUT (general case), you can use "[[]]" for replacing
   bringupSUTDelay: 0 # duration to wait after command
   bringupSUTTimeout: 1 # seconds (0 for no timeout, but you have to specify bringup_finish_trigger then or tests will not be run)
   bringupSUTFinishTrigger: "-" # command to test whether startup is finished, "-" = no trigger
-  runSUT: "docker run --rm --net=rosnetwork --env ROS_HOSTNAME=[[masterHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[masterHost]] -dt testit_tb_sut:latest /bin/bash -c \"source /catkin_ws/devel/setup.bash && rosrun mission_control start_move_base_in_docker.sh && tail -f /dev/null\"" # run SUT 
-  runSUTDelay: 90 # duration to wait for SUT to come up (roscore initialization)
-  runSUTTimeout: 90
+  runSUT: "docker run --rm --net=rosnetwork --env ROS_HOSTNAME=[[masterHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[masterHost]] -dt testit_dtron_tb_sut:latest /bin/bash -c \"source /catkin_ws/devel/setup.bash && roslaunch robots_stage stage.launch world_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.world map_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.yaml initial_x:=28.6 initial_y:=4.0 initial_a:=0.0\"" # run SUT 
+  runSUTDelay: 5 # duration to wait for SUT to come up (roscore initialization)
+  runSUTTimeout: 5
   runSUTFinishTrigger: "-"
   stopSUT: "docker kill [[masterHost]]"
   stopSUTDelay: 0 # duration to wait after stopping the SUT
@@ -47,9 +66,9 @@ configuration:
   bringupTestItDelay: 0 # duration to wait after command
   bringupTestItTimeout: 1
   bringupTestItFinishTrigger: "-"
-  runTestIt: "docker run --rm --volume=/catkin_ws/src/testit/dtron/turtlebot/testit_tests/:/testit_tests --net=rosnetwork --env ROS_VERSION=[[rosVersion]] --env ROS_HOSTNAME=[[testitHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testitHost]] -dt testit_tb_testit /bin/bash -c \"/catkin_ws/src/testit/dtron/turtlebot/scripts/run_adapter.sh && tail -f /dev/null\"" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
-  runTestItDelay: 10 # duration to wait after command
-  runTestItTimeout: 10
+  runTestIt: "docker run --rm --volume=$(rospack find testit_dtron_tutorials)/turtlebot_stage/:/testit --net=rosnetwork --env ROS_VERSION=[[rosVersion]] --env ROS_HOSTNAME=[[testitHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testitHost]] -dt testit_dtron_tb_testit:latest /catkin_ws/spread/sbin/spread" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
+  runTestItDelay: 5 # duration to wait after command
+  runTestItTimeout: 5
   runTestItFinishTrigger: "-"
   stopTestIt: "docker kill [[testitHost]]" # general case pipeline stopping
   stopTestItDelay: 0 # duration to wait after command

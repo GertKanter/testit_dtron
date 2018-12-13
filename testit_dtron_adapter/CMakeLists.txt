@@ -34,8 +34,7 @@ add_library(xtaproto_lib
   src/xtaproto.pb.cc
 )
 
-add_executable(multi_adapter src/multi_adapter.cpp)
-add_executable(single_adapter src/single_adapter.cpp)
+add_executable(test_adapter src/test_adapter.cpp)
 
 find_library(protobuf protobuf PATHS ${PROJECT_SOURCE_DIR}/protobuf/lib NO_CMAKE_SYSTEM_PATH)
 get_filename_component(protobuf_REALPATH ${protobuf} REALPATH)
@@ -46,20 +45,14 @@ get_filename_component(spread_REALPATH ${spread} REALPATH)
 find_library(topological_navigation topological_navigation PATHS /catkin_ws/devel/lib NO_CMAKE_SYSTEM_PATH)
 get_filename_component(topological_navigation_REALPATH ${topological_navigation} REALPATH)
 
-target_link_libraries(multi_adapter
+target_link_libraries(test_adapter
    ${catkin_LIBRARIES}
    ${spread_REALPATH}
    ${protobuf_REALPATH}
    xtaproto_lib
    pthread
  )
-target_link_libraries(single_adapter
-   ${catkin_LIBRARIES}
-   ${spread_REALPATH}
-   ${protobuf_REALPATH}
-   xtaproto_lib
-   pthread
- )
+
 
 #############
 ## Testing ##
