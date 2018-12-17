@@ -15,6 +15,8 @@
 
   <author email="gert.kanter@ttu.ee">Gert Kanter</author>
 
+  <build_depend>testit</build_depend>
+  <build_depend>testit_oracles</build_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
 
