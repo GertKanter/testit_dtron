@@ -29,7 +29,7 @@ RUN apt-get update && \
 	git clone https://github.com/strands-project/fremen.git && \
 	mv /catkin_ws/src/fremen/FremenServer /catkin_ws/src/strands_navigation/ && \
 	rm -r /catkin_ws/src/fremen && \
-	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make" && \
+	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON" && \
 # configure Spread
 	useradd spread && usermod -a -G spread spread && \
 	mkdir -m 777 /var/run/spread && \
