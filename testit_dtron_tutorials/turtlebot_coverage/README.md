@@ -58,7 +58,7 @@ signal.signal(signal.SIGUSR1, handle_flush_signal)
 ```
 
 The Python scripts must be executed via `coverage` package. For example, the hashbang can be changed into
-```
+```py
 #!/usr/local/bin/coverage2 run
 ```
 
