@@ -43,6 +43,20 @@ int main(int argc, char **argv)
 ```
 ##### Python
 The Python stack requires `coverage` package to be installed.
+
+The `coverage` package needs to be modified in order to handle the `SIGUSR1` signal and support the coverage data flushing.
+
+In case of Python 3.5 and Coverage version 4.5.2, we can inject the following code into `/usr/local/lib/python3.5/dist-packages/coverage/cmdline.py`
+```py
+# Run the script.
+import signal
+def handle_flush_signal(signum, stack):
+    self.coverage.save()
+    self.coverage._lines = None
+    self.coverage._arcs = None
+signal.signal(signal.SIGUSR1, handle_flush_signal)
+```
+
 ### Running the daemon
 To run this tutorial we can launch the `turtlebot.launch` file like this:
 ```
