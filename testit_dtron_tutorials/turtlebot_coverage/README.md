@@ -38,7 +38,7 @@ void flush(int sig) { __gcov_flush(); } // FLUSH ON SIGUSR1
 int main(int argc, char **argv)
 {
   signal(SIGUSR1, &flush); // INJECT HANDLER
-  ...
+  // ...
 }
 ```
 ##### Python
@@ -58,7 +58,7 @@ signal.signal(signal.SIGUSR1, handle_flush_signal)
 ```
 
 The Python scripts must be executed via `coverage` package. For example, the hashbang can be changed into
-```py
+```bash
 #!/usr/local/bin/coverage2 run
 ```
 
