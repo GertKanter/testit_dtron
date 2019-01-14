@@ -27,6 +27,20 @@ rosrun testit_dtron_tutorials build_containers_coverage.sh
 The main difference between the two tutorials (with and without coverage analysis) is that we need to install an additional package to the SUT stack. This package will allow TestIt to send a signal to flush coverage data and report the data from SUT back to TestIt. This allows us to gather information about the lines of code that are executed when transitioning from one state to another.
 ##### C++
 Note that the SUT C++ stack that is being tested needs to be compiled with coverage support (`-fprofile-arcs -ftest-coverage`).
+
+The packages that are being tested need to handle `SIGUSR1` signal and flush the coverage data upon receiving that signal.
+To achieve this, it is possible to inject the following code into the `main()` function of the node.
+```cpp
+#include <signal.h>
+extern "C" void __gcov_flush();
+void flush(int sig) { __gcov_flush(); } // FLUSH ON SIGUSR1
+
+int main(int argc, char **argv)
+{
+  signal(SIGUSR1, &flush); // INJECT HANDLER
+  ...
+}
+```
 ##### Python
 The Python stack requires `coverage` package to be installed.
 ### Running the daemon
