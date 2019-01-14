@@ -21,8 +21,14 @@ rosrun testit build_local_testit_docker.sh
 ```
 In order to run the tutorial, we need to build the containers so that TestIt can start both the SUT and the SUT specific TestIt container. We can do it with the following command:
 ```
-rosrun testit_dtron_tutorials build_containers.sh
+rosrun testit_dtron_tutorials build_containers_coverage.sh
 ```
+#### Coverage support requirements
+The main difference between the two tutorials (with and without coverage analysis) is that we need to install an additional package to the SUT stack. This package will allow TestIt to send a signal to flush coverage data and report the data from SUT back to TestIt. This allows us to gather information about the lines of code that are executed when transitioning from one state to another.
+##### C++
+Note that the SUT C++ stack that is being tested needs to be compiled with coverage support (`-fprofile-arcs -ftest-coverage`).
+##### Python
+The Python stack requires `coverage` package to be installed.
 ### Running the daemon
 To run this tutorial we can launch the `turtlebot.launch` file like this:
 ```

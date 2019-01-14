@@ -10,7 +10,7 @@ RUN apt-get update && \
 	git clone https://github.com/turtlebot/turtlebot_apps && \
 	git clone https://github.com/turtlebot/turtlebot && \
 	git clone https://github.com/GertKanter/robots_stage.git && \
-        git clone https://github.com/GertKanter/testit_sut.git -b devel && \
+        git clone https://github.com/GertKanter/testit_sut.git -b develop && \
         git clone https://github.com/ros-planning/navigation -b kinetic-devel && \
 # clone STRANDS packages
         apt-get install -y python-pymongo mongodb && \
