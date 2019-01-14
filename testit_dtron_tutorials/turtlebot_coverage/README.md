@@ -46,7 +46,7 @@ The Python stack requires `coverage` package to be installed.
 
 The `coverage` package needs to be modified in order to handle the `SIGUSR1` signal and support the coverage data flushing.
 
-In case of Python 3.5 and Coverage version 4.5.2, we can inject the following code into `/usr/local/lib/python3.5/dist-packages/coverage/cmdline.py`
+In case of Python 2.7 and Coverage version 4.5.2, we can inject the following code into `/usr/local/lib/python2.7/dist-packages/coverage/cmdline.py`
 ```py
 # Run the script.
 import signal
