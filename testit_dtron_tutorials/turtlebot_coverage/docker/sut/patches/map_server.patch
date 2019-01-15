@@ -1,0 +1,15 @@
+--- /catkin_ws/src/navigation/map_server/src/main.cpp   2019-01-14 14:39:23.000000000 +0000
++++ /catkin_ws/src/navigation/map_server/src/main_cov.cpp       2019-01-15 09:08:44.158564295 +0000
+@@ -231,8 +231,12 @@
+ 
+ };
+ 
++#include <signal.h>
++extern "C" void __gcov_flush();
++void flush(int sig) { __gcov_flush(); } // FLUSH ON SIGUSR1
+ int main(int argc, char **argv)
+ {
++  signal(SIGUSR1, &flush); // INJECT HANDLER
+   ros::init(argc, argv, "map_server", ros::init_options::AnonymousName);
+   if(argc != 3 && argc != 2)
+   {

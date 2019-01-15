@@ -1,0 +1,17 @@
+--- /catkin_ws/src/navigation/amcl/src/amcl_node.cpp    2019-01-15 08:50:56.634361933 +0000
++++ /catkin_ws/src/navigation/amcl/src/amcl_node_cov.cpp        2019-01-15 08:50:42.074334554 +0000
+@@ -281,10 +281,14 @@
+   amcl_node_ptr->savePoseToServer();
+   ros::shutdown();
+ }
++#include <signal.h>
++extern "C" void __gcov_flush();
++void flush(int sig) { __gcov_flush(); } // FLUSH ON SIGUSR1
+ 
+ int
+ main(int argc, char** argv)
+ {
++  signal(SIGUSR1, &flush); // INJECT HANDLER
+   ros::init(argc, argv, "amcl");
+   ros::NodeHandle nh;
+
