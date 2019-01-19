@@ -4,7 +4,7 @@
   <version>0.0.1</version>
   <description>The testit_dtron_adaper package</description>
 
-  <maintainer email="gert.kanter@ttu.ee">Gert Kanter</maintainer>
+  <maintainer email="gert.kanter@taltech.ee">Gert Kanter</maintainer>
 
   <license>BSD</license>
 
@@ -13,8 +13,8 @@
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- <url type="website">http://wiki.ros.org/spread_test</url> -->
 
-  <author email="gert.kanter@ttu.ee">Gert Kanter</author>
-  <author email="artur.gummel@ttu.ee">Artur Gummel</author>
+  <author email="gert.kanter@taltech.ee">Gert Kanter</author>
+  <author email="artur.gummel@taltech.ee">Artur Gummel</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>

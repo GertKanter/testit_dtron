@@ -12,6 +12,7 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
           tf
           move_base_msgs
           actionlib
+          testit_msgs
   )
 
   SET(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CATKIN_PACKAGE_LIB_DESTINATION})

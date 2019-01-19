@@ -18,6 +18,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <std_msgs/Bool.h>
 
+#include <testit_msgs/Coverage.h>
+
 
 struct SpreadMessage {
   int Type;
@@ -236,6 +238,7 @@ private:
   std::string object_detector_topic_;
   ros::Subscriber object_detector_sub_;
   bool object_detected_;
+  ros::ServiceClient sut_coverage_client_;
 public:
   Adapter(ros::NodeHandle nh,
       std::string goal_topic,
@@ -252,6 +255,8 @@ public:
     robot_name_(robot_name),
     object_detector_topic_(object_detector_topic),
     object_detected_(false) {
+    {
+      sut_coverage_client_ = nh.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
       nh.getParam("/test_adapter/node_map", node_map_);
       ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
@@ -285,8 +290,23 @@ public:
     testAdapter_ = &testAdapter;
   }
 
+  bool flushCoverage() {
+    ROS_INFO_STREAM("Flushing coverage information");
+    testit_msgs::Coverage flush_service;
+    if (sut_coverage_client_.call(flush_service))
+    {
+      ROS_INFO("Flush call success");
+    }
+    else
+    {
+      ROS_ERROR("Flush call failed!");
+    }
+    return true;
+  }
+
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
+    flushCoverage();
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -413,6 +433,8 @@ public:
     {
       ROS_ERROR("Unhandled sync type!");
     }
+    flushCoverage();
+    ROS_INFO("Finished message processing.");
   }
 };
 
