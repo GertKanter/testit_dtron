@@ -14,6 +14,7 @@ RUN apt-get update && \
 	apt-get install -y ros-lunar-move-base-msgs && \
 #	mkdir /opt/ros/mongodb_store && \
 # install Spread and Google Protobuf
+	git clone https://github.com/GertKanter/testit_msgs /catkin_ws/src/testit_msgs/ && \
 	git clone https://github.com/GertKanter/testit_dtron /catkin_ws/src/testit_dtron/ && \
 	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
 # clone STRANDS packages
