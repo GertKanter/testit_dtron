@@ -254,9 +254,9 @@ public:
     sync_output_(sync_output),
     robot_name_(robot_name),
     object_detector_topic_(object_detector_topic),
-    object_detected_(false) {
+    object_detected_(false)
     {
-      sut_coverage_client_ = nh.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
+      sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
       nh.getParam("/test_adapter/node_map", node_map_);
       ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
