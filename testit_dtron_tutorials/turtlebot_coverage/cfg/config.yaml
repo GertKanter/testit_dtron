@@ -50,8 +50,8 @@ configuration:
   bringupSUTDelay: 0 # duration to wait after command
   bringupSUTTimeout: 1 # seconds (0 for no timeout, but you have to specify bringup_finish_trigger then or tests will not be run)
   bringupSUTFinishTrigger: "-" # command to test whether startup is finished, "-" = no trigger
-  runSUT: "docker run --rm --net=rosnetwork --env ROS_HOSTNAME=[[masterHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[masterHost]] -dt testit_dtron_tb_sut:latest /bin/bash -c \"source /catkin_ws/devel/setup.bash && roslaunch robots_stage stage.launch world_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.world map_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.yaml initial_x:=28.6 initial_y:=4.0 initial_a:=0.0\"" # run SUT 
-  runSUTDelay: 5 # duration to wait for SUT to come up (roscore initialization)
+  runSUT: "docker run --rm --net=rosnetwork --env ROS_HOSTNAME=[[masterHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[masterHost]] -dt testit_dtron_tb_coverage_sut:latest /bin/bash -c \"source /catkin_ws/devel/setup.bash && roslaunch robots_stage stage.launch _world_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.world map_file:=/catkin_ws/src/robots_stage/maps/4korrus/4korrus.yaml initial_x:=28.6 initial_y:=4.0 initial_a:=0.0\"" # run SUT 
+  runSUTDelay: 10 # duration to wait for SUT to come up (roscore initialization)
   runSUTTimeout: 5
   runSUTFinishTrigger: "-"
   stopSUT: "docker kill [[masterHost]]"
@@ -66,7 +66,7 @@ configuration:
   bringupTestItDelay: 0 # duration to wait after command
   bringupTestItTimeout: 1
   bringupTestItFinishTrigger: "-"
-  runTestIt: "docker run --rm --volume=$(rospack find testit_dtron_tutorials)/turtlebot_stage/:/testit --net=rosnetwork --env ROS_VERSION=[[rosVersion]] --env ROS_HOSTNAME=[[testitHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testitHost]] -dt testit_dtron_tb_testit:latest /catkin_ws/spread/sbin/spread" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
+  runTestIt: "docker run --rm --volume=$(rospack find testit_dtron_tutorials)/turtlebot_stage/:/testit --net=rosnetwork --env ROS_VERSION=[[rosVersion]] --env ROS_HOSTNAME=[[testitHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testitHost]] -dt testit_dtron_tb_coverage_testit:latest /catkin_ws/spread/sbin/spread" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
   runTestItDelay: 5 # duration to wait after command
   runTestItTimeout: 5
   runTestItFinishTrigger: "-"

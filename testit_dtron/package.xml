@@ -4,7 +4,7 @@
   <version>0.0.1</version>
   <description>TestIt DTRON extension</description>
 
-  <maintainer email="gert.kanter@ttu.ee">Gert Kanter</maintainer>
+  <maintainer email="gert.kanter@taltech.ee">Gert Kanter</maintainer>
 
   <license>BSD</license>
 
@@ -12,8 +12,8 @@
   <url type="bugtracker">https://github.com/GertKanter/testit/issues</url>
   <url type="repository">https://github.com/GertKanter/testit</url>
 
-  <author email="gert.kanter@ttu.ee">Gert Kanter</author>
-  <author email="artur.gummel@ttu.ee">Artur Gummel</author>
+  <author email="gert.kanter@taltech.ee">Gert Kanter</author>
+  <author email="artur.gummel@taltech.ee">Artur Gummel</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>rospy</run_depend>

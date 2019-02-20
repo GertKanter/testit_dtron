@@ -1,5 +1,5 @@
 FROM ros:kinetic-robot-xenial
-MAINTAINER Gert Kanter <gert.kanter@ttu.ee>
+MAINTAINER Gert Kanter <gert.kanter@taltech.ee>
 LABEL Description="TestIt! ROS Testing toolkit tutorial SUT image"
 RUN apt-get update && \
 	apt-get install -y scons ros-kinetic-cv-bridge ros-kinetic-image-transport ros-kinetic-image-geometry ros-kinetic-depth-image-proc ros-kinetic-joy ros-kinetic-kobuki-description ros-kinetic-stage-ros libbullet-dev libsdl-image1.2-dev libpcl-dev ros-kinetic-move-base-msgs ros-kinetic-tf2-geometry-msgs ros-kinetic-bfl ros-kinetic-pcl-ros && \
