@@ -1,11 +1,12 @@
 FROM ros:kinetic-robot-xenial
-MAINTAINER Gert Kanter <gert.kanter@ttu.ee>
+MAINTAINER Gert Kanter <gert.kanter@taltech.ee>
 LABEL Description="TestIt! ROS Testing toolkit tutorial SUT image"
 # copy patches to docker context
 COPY patches/*.patch /
 # get dependencies and packages
 RUN apt-get update && \
-	apt-get install -y scons ros-kinetic-cv-bridge ros-kinetic-image-transport ros-kinetic-image-geometry ros-kinetic-depth-image-proc ros-kinetic-joy ros-kinetic-kobuki-description ros-kinetic-stage-ros libbullet-dev libsdl-image1.2-dev libpcl-dev ros-kinetic-move-base-msgs ros-kinetic-tf2-geometry-msgs ros-kinetic-bfl ros-kinetic-pcl-ros && \
+	apt-get install -y scons python-pip ros-kinetic-cv-bridge ros-kinetic-image-transport ros-kinetic-image-geometry ros-kinetic-depth-image-proc ros-kinetic-joy ros-kinetic-kobuki-description ros-kinetic-stage-ros libbullet-dev libsdl-image1.2-dev libpcl-dev ros-kinetic-move-base-msgs ros-kinetic-tf2-geometry-msgs ros-kinetic-bfl ros-kinetic-pcl-ros && \
+        pip install coverage && \
 	mkdir -p /catkin_ws/src && \
 	/bin/bash -c "source /opt/ros/kinetic/setup.bash && cd /catkin_ws/src && catkin_init_workspace" && \
 	cd /catkin_ws/src && \
@@ -13,7 +14,9 @@ RUN apt-get update && \
 	git clone https://github.com/turtlebot/turtlebot_apps && \
 	git clone https://github.com/turtlebot/turtlebot && \
 	git clone https://github.com/GertKanter/robots_stage.git && \
+        git clone https://github.com/GertKanter/testit_msgs.git && \
         git clone https://github.com/GertKanter/testit_sut.git -b develop && \
+        git clone https://github.com/GertKanter/autosys-object-detector && \
         git clone https://github.com/ros-planning/navigation -b kinetic-devel && \
 # clone STRANDS packages
         apt-get install -y python-pymongo mongodb && \

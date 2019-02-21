@@ -14,11 +14,11 @@ RUN apt-get update && \
 	apt-get install -y ros-lunar-move-base-msgs && \
 #	mkdir /opt/ros/mongodb_store && \
 # install Spread and Google Protobuf
-	git clone https://github.com/GertKanter/testit_msgs /catkin_ws/src/testit_msgs/ && \
-	git clone https://github.com/GertKanter/testit_dtron /catkin_ws/src/testit_dtron/ && \
+        cd /catkin_ws/src && \
+	git clone https://github.com/GertKanter/testit_msgs && \
+	git clone https://github.com/GertKanter/testit_dtron -b develop && \
 	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
 # clone STRANDS packages
-	cd /catkin_ws/src && \
 	git clone https://github.com/strands-project/strands_navigation.git && \
 	apt-get install -y ros-lunar-map-server ros-lunar-costmap-2d ros-lunar-navfn && \
 	git clone https://github.com/strands-project/mongodb_store.git && \

@@ -1,0 +1,14 @@
+--- /catkin_ws/src/navigation/move_base/src/move_base_node.cpp  2019-01-15 12:39:17.000000000 +0000
++++ /catkin_ws/src/navigation/move_base/src/move_base_node_cov.cpp      2019-01-15 15:58:44.784783206 +0000
+@@ -29,7 +29,11 @@
+ 
+ #include <move_base/move_base.h>
+ 
++#include <signal.h>
++extern "C" void __gcov_flush();
++void flush(int sig) { __gcov_flush(); } // FLUSH ON SIGUSR1
+ int main(int argc, char** argv){
++  signal(SIGUSR1, &flush); // INJECT HANDLER
+   ros::init(argc, argv, "move_base_node");
+   tf::TransformListener tf(ros::Duration(10));
+ 

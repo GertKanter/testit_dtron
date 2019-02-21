@@ -1,0 +1,10 @@
+--- /catkin_ws/src/robots_stage/launch/stage.launch     2019-01-15 09:24:01.000000000 +0000
++++ /catkin_ws/src/robots_stage/launch/stage_cov.launch 2019-01-15 11:18:03.240690324 +0000
+@@ -29,4 +29,7 @@
+     <param name="base_watchdog_timeout" value="0.2"/>
+   </node>
+ <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find robots_stage)/rviz/rviz_config.rviz"/-->
++  <node pkg="testit_sut" type="testit_service.py" name="testit_sut" output="screen">
++    <param name="node_workspace" value="/catkin_ws"/>
++  </node>
+ </launch>
