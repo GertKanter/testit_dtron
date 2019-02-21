@@ -299,10 +299,13 @@ public:
        )
     {
       ROS_DEBUG_STREAM("Flushing coverage information");
-      testit_msgs::Coverage flush_service;
-      if (sut_coverage_client_.call(flush_service))
+      testit_msgs::Coverage coverage_results;
+      if (sut_coverage_client_.call(coverage_results))
       {
         ROS_DEBUG("Flush call success");
+        for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
+          ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
+        }
       }
       else
       {
