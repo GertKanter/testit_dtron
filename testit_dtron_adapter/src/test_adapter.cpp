@@ -220,7 +220,9 @@ namespace dtron_test_adapter {
       }
       receiveMessage_(sync.name(), mapOfVariables);
     } else {
-      printf("Received incorrectly formed message from %s in %s: %s\n", sender, group, msg);
+      if (sender == NULL) {
+        printf("Received incorrectly formed message: %s\n", msg);
+      }
     }
   }
 }
@@ -290,23 +292,29 @@ public:
     testAdapter_ = &testAdapter;
   }
 
-  bool flushCoverage() {
-    ROS_INFO_STREAM("Flushing coverage information");
-    testit_msgs::Coverage flush_service;
-    if (sut_coverage_client_.call(flush_service))
+  bool flushCoverage(std::string name) {
+    if ((name.find("goto") != std::string::npos) ||
+        (name.find("moveto") != std::string::npos) ||
+        (name.find("object_detect") != std::string::npos)
+       )
     {
-      ROS_INFO("Flush call success");
-    }
-    else
-    {
-      ROS_ERROR("Flush call failed!");
+      ROS_DEBUG_STREAM("Flushing coverage information");
+      testit_msgs::Coverage flush_service;
+      if (sut_coverage_client_.call(flush_service))
+      {
+        ROS_DEBUG("Flush call success");
+      }
+      else
+      {
+        ROS_ERROR("Flush call failed!");
+      }
     }
     return true;
   }
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
-    flushCoverage();
+    flushCoverage(name);
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -332,8 +340,14 @@ public:
             ac_topological_.waitForResult();
             state = ac_topological_.getState();
           }
-          else
-            ROS_ERROR("Topological_navigation action server not connected!");
+          else {
+            while (!ac_topological_.isServerConnected()) {
+              ROS_ERROR("Topological_navigation action server not connected! Waiting for server (10 s)...");
+              ac_topological_.waitForServer(ros::Duration(10, 0));
+            }
+            receiveMessage(name, args); // Call self to retry
+            return;
+          }
         }
         else
         {
@@ -356,8 +370,14 @@ public:
             ac_movebase_.waitForResult();
             state = ac_movebase_.getState();
           }
-          else
-            ROS_ERROR("Move_base action server not connected!");
+          else {
+            while (!ac_movebase_.isServerConnected()) {
+              ROS_ERROR("Move_base action server not connected! Waiting for server (10 s)...");
+              ac_movebase_.waitForServer(ros::Duration(10, 0));
+            }
+            receiveMessage(name, args); // Call self to retry
+            return;
+          }
         }
         ROS_INFO("Action finished with state = %s", state.toString().c_str());
         if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
@@ -429,11 +449,7 @@ public:
         vars["value"] = 1; // not detected == 1
       testAdapter_->sendMessage(sync_output_.c_str(), vars);
     }
-    else
-    {
-      ROS_ERROR("Unhandled sync type!");
-    }
-    flushCoverage();
+    flushCoverage(name);
     ROS_INFO("Finished message processing.");
   }
 };
