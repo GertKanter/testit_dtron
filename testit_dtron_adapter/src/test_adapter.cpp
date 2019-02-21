@@ -292,7 +292,7 @@ public:
     testAdapter_ = &testAdapter;
   }
 
-  bool flushCoverage(std::string name) {
+  bool flushCoverage(std::string name, std::map<std::string, int> args, std::string event) {
     if ((name.find("goto") != std::string::npos) ||
         (name.find("moveto") != std::string::npos) ||
         (name.find("object_detect") != std::string::npos)
@@ -317,7 +317,7 @@ public:
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
-    flushCoverage(name);
+    flushCoverage(name, args, "PRE");
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -452,7 +452,7 @@ public:
         vars["value"] = 1; // not detected == 1
       testAdapter_->sendMessage(sync_output_.c_str(), vars);
     }
-    flushCoverage(name);
+    flushCoverage(name, args, "POST");
     ROS_INFO("Finished message processing.");
   }
 };
