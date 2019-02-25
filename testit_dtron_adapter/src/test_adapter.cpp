@@ -309,7 +309,7 @@ public:
       ROS_DEBUG_STREAM("Flushing coverage information");
       // Open coverage results file
       std::ofstream coverage_file;
-      coverage_file.open ((coverage_output_ + "testit_coverage.log").c_str(), std::ios::app);
+      coverage_file.open ((coverage_output_ + "/testit_coverage.log").c_str(), std::ios::app);
       testit_msgs::Coverage coverage_results;
       if (sut_coverage_client_.call(coverage_results))
       {
