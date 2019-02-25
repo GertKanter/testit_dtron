@@ -12,6 +12,8 @@
 #include <boost/function.hpp>
 #include "sp.h"
 #include <tf/tf.h>
+#include <iostream>
+#include <fstream>
 
 #include <move_base_msgs/MoveBaseAction.h>
 #include <topological_navigation/GotoNodeAction.h>
@@ -239,6 +241,8 @@ private:
   std::string robot_name_;
   std::string object_detector_topic_;
   ros::Subscriber object_detector_sub_;
+  std::string coverage_format_;
+  std::string coverage_output_;
   bool object_detected_;
   ros::ServiceClient sut_coverage_client_;
 public:
@@ -248,7 +252,9 @@ public:
       std::string sync_output,
       std::string waypoint_goal_topic,
       std::string robot_name,
-      std::string object_detector_topic) :
+      std::string object_detector_topic,
+      std::string coverage_format,
+      std::string coverage_output) :
     ac_movebase_(goal_topic, true),
     ac_topological_(waypoint_goal_topic, true),
     nh_(nh),
@@ -256,7 +262,9 @@ public:
     sync_output_(sync_output),
     robot_name_(robot_name),
     object_detector_topic_(object_detector_topic),
-    object_detected_(false)
+    object_detected_(false),
+    coverage_format_(coverage_format),
+    coverage_output_(coverage_output)
     {
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
@@ -299,13 +307,21 @@ public:
        )
     {
       ROS_DEBUG_STREAM("Flushing coverage information");
+      // Open coverage results file
+      std::ofstream coverage_file;
+      coverage_file.open ((coverage_output_ + "testit_coverage.log").c_str(), std::ios::app);
       testit_msgs::Coverage coverage_results;
       if (sut_coverage_client_.call(coverage_results))
       {
         ROS_DEBUG("Flush call success");
         for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
           ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
+          coverage_file << "'" << coverage_results.response.coverage[i].filename << "'"
+                        << ": "
+                        << coverage_results.response.coverage[i].lines.size()
+                        << "\n";
         }
+      coverage_file.close();
       }
       else
       {
@@ -467,6 +483,16 @@ int main(int argc, char** argv) {
   }
   std::string robot_name = argv[1];
   GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  std::string coverage_format;
+  nh.param<std::string>("/test_adapter/coverage/format", coverage_format, "yaml");
+  std::string coverage_output;
+  nh.param<std::string>("/test_adapter/coverage/output", coverage_output, "");
+  if (coverage_output == "")
+  {
+    ROS_WARN("Coverage results output directory not defined (using working directory)!");
+  }
+
   std::vector<const char*> groups;
   std::vector<std::string> sync_input;
   nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/input", sync_input);
@@ -494,7 +520,7 @@ int main(int argc, char** argv) {
     ROS_ERROR("Spread parameters not configured, unable to launch adapter!");
     return 1;
   }
-  Adapter adapter(nh, goal_topic, sync_input, sync_output, waypoint_goal_topic, robot_name, object_detector_topic);
+  Adapter adapter(nh, goal_topic, sync_input, sync_output, waypoint_goal_topic, robot_name, object_detector_topic, coverage_format, coverage_output);
   dtron_test_adapter::TestAdapter testAdapter(nh,  (port + "@" + ip).c_str(), username.c_str(), groups, boost::bind(&Adapter::receiveMessage, &adapter, _1, _2));
   adapter.setTestAdapter(testAdapter);
   ROS_INFO("Test adapter running...");
