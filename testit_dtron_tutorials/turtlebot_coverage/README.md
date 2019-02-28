@@ -52,8 +52,7 @@ In case of Python 2.7 and Coverage version 4.5.2, we can inject the following co
 import signal
 def handle_flush_signal(signum, stack):
     self.coverage.save()
-    self.coverage._lines = None
-    self.coverage._arcs = None
+    self.coverage.data.erase()
 signal.signal(signal.SIGUSR1, handle_flush_signal)
 ```
 
