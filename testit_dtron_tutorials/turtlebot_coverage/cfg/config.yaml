@@ -12,6 +12,7 @@ tests:
     bagDuration: "" # empty = use default
 
 configuration:
+  dataDirectory: "$(rospack find testit)/data/" # Where to store coverage files, bag files etc.
   bringupSUT: "" # how to bring up a pipeline server/docker SUT (general case), you can use "[[]]" for replacing
   bringupSUTDelay: 0 # duration to wait after command
   bringupSUTTimeout: 1 # seconds (0 for no timeout, but you have to specify bringup_finish_trigger then or tests will not be run)
