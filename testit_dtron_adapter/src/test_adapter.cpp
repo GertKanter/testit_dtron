@@ -321,7 +321,7 @@ public:
 	  double timestamp = (ros::Time::now()).toSec();
 	  for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
 	    ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
-	    coverage_file << "- traceStartTimestamp: " << coverage_trace_start_timestamp_ << "\n"
+	    coverage_file << "- traceStartTimestamp: " << std::setprecision(18) << coverage_trace_start_timestamp_ << "\n"
                           << "  timestamp: " << timestamp << "\n"
 	                  << "  event: " << event << "\n"
                           << "  name: " << name << "\n"
