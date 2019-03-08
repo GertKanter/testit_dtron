@@ -243,6 +243,7 @@ private:
   ros::Subscriber object_detector_sub_;
   std::string coverage_format_;
   std::string coverage_output_;
+  double coverage_trace_start_timestamp_;
   bool object_detected_;
   ros::ServiceClient sut_coverage_client_;
 public:
@@ -264,7 +265,8 @@ public:
     object_detector_topic_(object_detector_topic),
     object_detected_(false),
     coverage_format_(coverage_format),
-    coverage_output_(coverage_output)
+    coverage_output_(coverage_output),
+    coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
@@ -314,33 +316,40 @@ public:
       if (sut_coverage_client_.call(coverage_results))
       {
         ROS_DEBUG("Flush call success");
-        double timestamp = (ros::Time::now()).toSec();
-        for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
-          ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
-          coverage_file << "- timestamp: " << timestamp << "\n"
-                        << "  event: " << event << "\n"
-                        << "  state: [";
-          std::map<std::string, int>::iterator it;
-          bool add_separator = false;
-          for (it = args.begin(); it != args.end(); it++) {
-            if (add_separator)
-              coverage_file << ", ";
-            coverage_file << "'" << it->first << "': " << it->second;
-            add_separator = true;
-          }
-          coverage_file << "]\n"
-                        << "  file: " << coverage_results.response.coverage[i].filename << "\n"
-                        << "  lines: [";
-          for (int j = 0; j < coverage_results.response.coverage[i].lines.size(); ++j) {
-            coverage_file << coverage_results.response.coverage[i].lines[j];
-            if (j+1 < coverage_results.response.coverage[i].lines.size())
-              coverage_file << ", ";
-          }
-          coverage_file << "]\n"
-                        << "  sum: "
-                        << coverage_results.response.coverage[i].lines.size()
-                        << "\n";
+        if (coverage_format_ == "yaml" || coverage_format_ == "")
+        {
+	  double timestamp = (ros::Time::now()).toSec();
+	  for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
+	    ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
+	    coverage_file << "- traceStartTimestamp: " << std::setprecision(18) << coverage_trace_start_timestamp_ << "\n"
+                          << "  timestamp: " << timestamp << "\n"
+	                  << "  event: " << event << "\n"
+                          << "  name: " << name << "\n"
+			  << "  state: [";
+	    std::map<std::string, int>::iterator it;
+	    bool add_separator = false;
+	    for (it = args.begin(); it != args.end(); it++) {
+              if (add_separator)
+	        coverage_file << ", ";
+	      coverage_file << "'" << it->first << "': " << it->second;
+	      add_separator = true;
+	    }
+	    coverage_file << "]\n"
+	                  << "  file: " << coverage_results.response.coverage[i].filename << "\n"
+			  << "  lines: [";
+	    for (int j = 0; j < coverage_results.response.coverage[i].lines.size(); ++j) {
+	      coverage_file << coverage_results.response.coverage[i].lines[j];
+	      if (j+1 < coverage_results.response.coverage[i].lines.size())
+	        coverage_file << ", ";
+	    }
+	    coverage_file << "]\n"
+	                  << "  sum: "
+			  << coverage_results.response.coverage[i].lines.size()
+			  << "\n";
+	    }
         }
+        else
+          ROS_ERROR("Unknown coverage log format!");
       coverage_file.close();
       }
       else
