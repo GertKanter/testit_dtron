@@ -1,7 +1,8 @@
 test_adapter:
  coverage:
+  enabled: true
   format: "yaml"
-  output: "/testit/testit_tests/results"
+  output: "/testit/testit_tests/results/"
  robot_0:
   spread:
    ip: "127.0.0.1"
