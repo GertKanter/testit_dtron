@@ -8,6 +8,7 @@ tests:
     oracle: "[[sharedDirectory]]testit_tests/tests/01/oracle/oracle.py 24.1 6.52" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
     timeout: 60 # time in seconds for timeout (0 for no timeout)
     timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+    postCommand: "echo 'Test finished!'" # it is possible to execute shell commands after running the test
     bagMaxSplits: "" # empty = use default
     bagDuration: "" # empty = use default
 
