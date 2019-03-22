@@ -1,6 +1,6 @@
---- /catkin_ws/src/robots_stage/launch/stage.launch     2019-03-22 11:11:05.836763976 +0000
-+++ /catkin_ws/src/robots_stage/launch/stage_cov.launch 2019-03-22 11:15:22.895988647 +0000
-@@ -29,4 +29,8 @@
+--- /catkin_ws/src/robots_stage/launch/stage.launch     2019-03-22 12:26:49.101866388 +0000
++++ /catkin_ws/src/robots_stage/launch/stage_patch.launch       2019-03-22 12:27:58.177582525 +0000
+@@ -29,4 +29,9 @@
      <param name="base_watchdog_timeout" value="0.2"/>
    </node>
  <!--node name="rviz" pkg="rviz" type="rviz" args="-d $(find robots_stage)/rviz/rviz_config.rviz"/-->
@@ -8,4 +8,5 @@
 +    <param name="node_workspace" value="/catkin_ws"/>
 +    <param name="coverage_directories" value="/catkin_ws/build;/root/.ros"/>
 +  </node>
++  <include file="$(find object_detector)/launch/detector.launch"/>
  </launch>
