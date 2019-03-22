@@ -34,8 +34,8 @@ configuration:
   bringupTestItDelay: 0 # duration to wait after command
   bringupTestItTimeout: 1
   bringupTestItFinishTrigger: "-"
-  runTestIt: "docker run --rm --volume=[[testItVolume]]:[[sharedDirectory]] --net=rosnetwork --env ROS_VERSION=[[testItRosVersion]] --env ROS_HOSTNAME=[[testItHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testItHost]] -dt testit_dtron_tb_coverage_testit:latest /catkin_ws/spread/sbin/spread" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
-  runTestItDelay: 5 # duration to wait after command
+  runTestIt: "docker run --rm --volume=[[testItVolume]]:[[sharedDirectory]] --net=rosnetwork --env ROS_VERSION=[[testItRosVersion]] --env ROS_HOSTNAME=[[testItHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testItHost]] -dt testit_dtron_tb_coverage_testit:latest /bin/bash -c '/catkin_ws/spread/sbin/spread -c [[sharedDirectory]]cfg/spread.conf'" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
+  runTestItDelay: 10 # duration to wait after command
   runTestItTimeout: 5
   runTestItFinishTrigger: "-"
   stopTestIt: "docker kill [[testItHost]]" # general case pipeline stopping
@@ -46,9 +46,9 @@ configuration:
   teardownTestItDelay: 0 # duration to wait after command
   teardownTestItTimeout: 5 # empty string = use default
   teardownTestItFinishTrigger: "-" # command to test whether startup is finished, "-" = no trigger
-  bagEnabled: False # True=rosbag record, False=don't bag
-  bagMaxSplits: 5 # total bag duration = maxsplits*duration
-  bagDuration: 15 # seconds
+  bagEnabled: True # True=rosbag record, False=don't bag
+  bagMaxSplits: 2 # total bag duration = maxsplits*duration
+  bagDuration: 8 # seconds
 
 pipelines:
   - tag: "Pipeline #1" # identifier for reporting

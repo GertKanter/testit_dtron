@@ -31,7 +31,9 @@ RUN apt-get update && \
         git clone https://github.com/strands-project/strands_movebase && \
         git clone https://github.com/strands-project/fremen.git && \
         mv /catkin_ws/src/fremen/FremenServer /catkin_ws/src/strands_navigation/ && \
-        rm -r /catkin_ws/src/fremen && \
+        rm -rf /catkin_ws/src/fremen && \
+        rm -rf /catkin_ws/src/strands_apps/odometry_mileage/ && \
+        rm -rf /catkin_ws/src/strands_navigation/topological_rviz_tools/ && \
         git clone https://github.com/GT-RAIL/robot_pose_publisher.git && \
 # patch packages that we want to track coverage of
         cd / && \

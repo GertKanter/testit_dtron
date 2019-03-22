@@ -12,9 +12,11 @@ RUN apt-get update && \
 	echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections && \
 	apt-get install oracle-java8-installer -y && \
 	apt-get install -y ros-lunar-move-base-msgs && \
+        # install libgpgp and mongoc
+        apt-get install -y libgpgme11-dev libmongoc-dev && \
 #	mkdir /opt/ros/mongodb_store && \
-# install Spread and Google Protobuf
         cd /catkin_ws/src && \
+# install Spread and Google Protobuf
 	git clone https://github.com/GertKanter/testit_msgs && \
 	git clone https://github.com/GertKanter/testit_dtron -b develop && \
 	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
@@ -29,8 +31,10 @@ RUN apt-get update && \
 	git clone https://github.com/strands-project/strands_movebase && \
 	git clone https://github.com/strands-project/fremen.git && \
 	mv /catkin_ws/src/fremen/FremenServer /catkin_ws/src/strands_navigation/ && \
-	rm -r /catkin_ws/src/fremen && \
-	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON" && \
+	rm -rf /catkin_ws/src/fremen/ && \
+        rm -rf /catkin_ws/src/strands_apps/odometry_mileage/ && \
+        rm -rf /catkin_ws/src/strands_navigation/topological_rviz_tools/ && \
+	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON -DCMAKE_CXX_FLAGS=-std=c++11" && \
 # configure Spread
 	useradd spread && usermod -a -G spread spread && \
 	mkdir -m 777 /var/run/spread && \
