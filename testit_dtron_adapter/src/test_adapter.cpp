@@ -544,6 +544,7 @@ int main(int argc, char** argv) {
   {
     ROS_ERROR_STREAM("Coverage log directory does not exist! Attempting to create...");
     std::system(("mkdir -p " + coverage_output).c_str());
+    std::system(("chmod 777 " + coverage_output).c_str());
   }
 
   std::vector<const char*> groups;
