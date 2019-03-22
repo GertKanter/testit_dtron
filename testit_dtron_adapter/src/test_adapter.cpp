@@ -14,6 +14,8 @@
 #include <tf/tf.h>
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
+#include <cstdlib>
 
 #include <move_base_msgs/MoveBaseAction.h>
 #include <topological_navigation/GotoNodeAction.h>
@@ -537,6 +539,12 @@ int main(int argc, char** argv) {
     ROS_WARN("Coverage results output directory not defined (using working directory)!");
   else
     ROS_INFO_STREAM("Adapter is recording coverage log to directory '" << coverage_output << "'");
+  struct stat buffer;
+  if (stat (coverage_output.c_str(), &buffer) != 0)
+  {
+    ROS_ERROR_STREAM("Coverage log directory does not exist! Attempting to create...");
+    std::system(("mkdir -p " + coverage_output).c_str());
+  }
 
   std::vector<const char*> groups;
   std::vector<std::string> sync_input;
