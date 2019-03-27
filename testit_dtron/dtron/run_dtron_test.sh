@@ -6,6 +6,11 @@
 # 
 export TRON_HOME=$(rospack find testit_dtron)/tron/uppaal-tron-1.5-linux
 
+if [ ! -d "$TRON_HOME" ]; then
+  echo "Unable to find TRON! Please point to un-zipped TRON distribution downloaded from: http://people.cs.aau.dk/~marius/tron"
+  exit 127
+fi
+
 if [ "$#" -ne 1 ]; then
     echo "Usage: run_dtron_test.sh uppaal_model_xml_path"
     exit
