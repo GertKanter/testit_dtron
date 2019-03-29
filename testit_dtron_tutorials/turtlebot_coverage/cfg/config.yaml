@@ -52,7 +52,6 @@ configuration:
 
 pipelines:
   - tag: "Pipeline #1" # identifier for reporting
-    testItRosVersion: "lunar"
     sutConnection: "-" # (e.g., "user@pipe1.domain.com"). "-" means no command (ssh, scp) wrapping, execute docker and other commands on localhost. Note that bringup/teardown are not wrapped. Run/stop + test commands are wrapped
     testItConnection: "-" # see above
     masterHost: "sut1"
