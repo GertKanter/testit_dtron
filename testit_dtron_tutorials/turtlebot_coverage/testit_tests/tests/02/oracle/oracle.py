@@ -32,10 +32,13 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
+# Author: Gert Kanter
 # Author: Artur Gummel
 
 import roslib
+import actionlib
 import rospy
+import testit_oracles.testit_gazebo
 import sys
 from move_base_msgs.msg import *
 from geometry_msgs.msg import PoseStamped
@@ -43,36 +46,40 @@ from geometry_msgs.msg import PoseStamped
 def resultCallback(data):
 	goalStatus = data.status.text
 	rospy.loginfo(goalStatus)
-	if goalStatus == "Failed to find a valid plan. Even after executing recovery behaviors.":
-		return False
-	else:
+	if goalStatus == "Goal reached.":
 		return True
+	else:
+		return False
 
-def goalCallback(data):
+def goalCallback(data, waypointX, waypointY):
 	x = float(data.pose.position.x)
 	y = float(data.pose.position.y)
 	rospy.loginfo('Current goal X: %f Y: %f', x, y)
-	msgResult = rospy.wait_for_message("/move_base/result", MoveBaseActionResult)
-	reachedLocation = resultCallback(msgResult)
-	if not reachedLocation:
-		rospy.loginfo("Did not reach WayPoint x: %f y: %f", x, y)
-		return 1 #fail
+	if waypointX - 0.1 <= x <= waypointX + 0.1 and waypointY - 0.1 <= y <= waypointY + 0.1:
+		msgResult = rospy.wait_for_message("/robot_0/move_base/result", MoveBaseActionResult)
+		reachedLocation = resultCallback(msgResult)
+		if reachedLocation:
+			rospy.loginfo("WayPoint x: %f y: %f reached successfully", x, y)
+			return 0 #success
+		else:
+			rospy.loginfo("Did not reach WayPoint x: %f y: %f", x, y)
+			return 1 #fail
 	else:
+		rospy.loginfo("Wait for a next goal")
 		return 3 #continue
 
 if __name__ == "__main__":
 	rospy.init_node("testit_tb_tutorial")
 	rate = rospy.Rate(2)
-	counter = 10
-	if len(sys.argv) == 2:
-		counter = int(sys.argv[1])
+	waypointX = float(sys.argv[1])
+	waypointY = float(sys.argv[2])
 	while not rospy.is_shutdown():
-		msg = rospy.wait_for_message("/move_base/current_goal", PoseStamped)
-		result = goalCallback(msg)
-		if result == 3:
-			counter -= 1
-			if counter <= 0:
-				sys.exit(0) #success
+                rospy.loginfo("Waiting for message...")
+		msg = rospy.wait_for_message("/robot_0/move_base_node/current_goal", PoseStamped)
+		result = goalCallback(msg, waypointX, waypointY)
+		rospy.loginfo("GOT RETURN STATEMENT %d", result)
+		if result == 0:
+			sys.exit(0)
 		elif result == 1:
-			sys.exit(1) #fail
+			sys.exit(1)
 		rate.sleep()
