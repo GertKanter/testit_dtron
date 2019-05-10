@@ -3,6 +3,7 @@ test_adapter:
   enabled: true
   format: "yaml"
   output: "/testit/testit_tests/results/"
+ proxy_suffix: "/proxy"
  robot_0:
   spread:
    ip: "127.0.0.1"
