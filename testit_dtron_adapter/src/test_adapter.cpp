@@ -246,6 +246,7 @@ private:
   bool coverage_enabled_;
   std::string coverage_format_;
   std::string coverage_output_;
+  std::string proxy_suffix_;
   double coverage_trace_start_timestamp_;
   bool object_detected_;
   ros::ServiceClient sut_coverage_client_;
@@ -259,7 +260,8 @@ public:
       std::string object_detector_topic,
       bool coverage_enabled,
       std::string coverage_format,
-      std::string coverage_output) :
+      std::string coverage_output,
+      std::string proxy_suffix) :
     ac_movebase_(goal_topic, true),
     ac_topological_(waypoint_goal_topic, true),
     nh_(nh),
@@ -271,6 +273,7 @@ public:
     coverage_enabled_(coverage_enabled),
     coverage_format_(coverage_format),
     coverage_output_(coverage_output),
+    proxy_suffix_(proxy_suffix),
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
@@ -546,6 +549,9 @@ int main(int argc, char** argv) {
     std::system(("mkdir -p " + coverage_output + " && chmod -R 777 " + coverage_output).c_str());
   }
 
+  std::string proxy_suffix;
+  nh.param<std::string>("/test_adapter/proxy_suffix", proxy_suffix, "");
+
   std::vector<const char*> groups;
   std::vector<std::string> sync_input;
   nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/input", sync_input);
@@ -573,7 +579,7 @@ int main(int argc, char** argv) {
     ROS_ERROR("Spread parameters not configured, unable to launch adapter!");
     return 1;
   }
-  Adapter adapter(nh, goal_topic, sync_input, sync_output, waypoint_goal_topic, robot_name, object_detector_topic, coverage_enabled, coverage_format, coverage_output);
+  Adapter adapter(nh, goal_topic, sync_input, sync_output, waypoint_goal_topic, robot_name, object_detector_topic, coverage_enabled, coverage_format, coverage_output, proxy_suffix);
   dtron_test_adapter::TestAdapter testAdapter(nh,  (port + "@" + ip).c_str(), username.c_str(), groups, boost::bind(&Adapter::receiveMessage, &adapter, _1, _2));
   adapter.setTestAdapter(testAdapter);
   ROS_INFO("Test adapter running...");
