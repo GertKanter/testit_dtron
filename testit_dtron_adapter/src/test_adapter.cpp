@@ -262,8 +262,8 @@ public:
       std::string coverage_format,
       std::string coverage_output,
       std::string proxy_suffix) :
-    ac_movebase_(goal_topic, true),
-    ac_topological_(waypoint_goal_topic, true),
+    ac_movebase_(goal_topic + proxy_suffix, true),
+    ac_topological_(waypoint_goal_topic + proxy_suffix, true),
     nh_(nh),
     sync_input_(sync_input),
     sync_output_(sync_output),
