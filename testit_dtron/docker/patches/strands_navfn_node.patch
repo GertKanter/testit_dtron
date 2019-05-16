@@ -1,0 +1,47 @@
+--- /catkin_ws/src/strands_movebase/strands_navfn/src/strands_navfn_node.cpp    2019-05-16 11:22:20.125846959 +0000
++++ /catkin_ws/src/strands_movebase/strands_navfn/src/strands_navfn_node_patched.cpp    2019-05-16 11:20:11.481973791 +0000
+@@ -38,6 +38,7 @@
+ #include <strands_navfn/MakeNavPlan.h>
+ #include <boost/shared_ptr.hpp>
+ #include <costmap_2d/costmap_2d_ros.h>
++#include <tf2_ros/transform_listener.h>
+ 
+ namespace cm=costmap_2d;
+ namespace rm=geometry_msgs;
+@@ -80,20 +81,10 @@
+ }
+ 
+ void NavfnWithCostmap::poseCallback(const rm::PoseStamped::ConstPtr& goal) {
+-    tf::Stamped<tf::Pose> global_pose;
++    geometry_msgs::PoseStamped global_pose;
+     cmap_->getRobotPose(global_pose);
+-  vector<PoseStamped> path;
+-  rm::PoseStamped start;
+-  start.header.stamp = global_pose.stamp_;
+-    start.header.frame_id = global_pose.frame_id_;
+-    start.pose.position.x = global_pose.getOrigin().x();
+-    start.pose.position.y = global_pose.getOrigin().y();
+-    start.pose.position.z = global_pose.getOrigin().z();
+-    start.pose.orientation.x = global_pose.getRotation().x();
+-    start.pose.orientation.y = global_pose.getRotation().y();
+-    start.pose.orientation.z = global_pose.getRotation().z();
+-    start.pose.orientation.w = global_pose.getRotation().w();
+-    makePlan(start, *goal, path);
++    vector<PoseStamped> path;
++    makePlan(global_pose, *goal, path);
+ }
+ 
+ 
+@@ -112,9 +103,10 @@
+ {
+   ros::init(argc, argv, "global_planner");
+ 
+-  tf::TransformListener tf(ros::Duration(10));
++  tf2_ros::Buffer buffer(ros::Duration(10));
++  tf2_ros::TransformListener tf(buffer);
+ 
+-  costmap_2d::Costmap2DROS lcr("costmap", tf);
++  costmap_2d::Costmap2DROS lcr("costmap", buffer);
+ 
+   strands_navfn::NavfnWithCostmap strands_navfn("navfn_planner", &lcr)
+

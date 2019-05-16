@@ -1,0 +1,36 @@
+--- /catkin_ws/build/mongodb_store/libmongocxx_ros/mongocxx/src/mongocxx/src/mongo/crypto/crypto_openssl.cpp       2019-05-16 08:14:38.341508538 +0000
++++ /catkin_ws/build/mongodb_store/libmongocxx_ros/mongocxx/src/mongocxx/src/mongo/crypto/crypto_openssl_patched.cpp    2019-05-16 08:18:52.707241273 +0000
+@@ -34,19 +34,26 @@
+  * Computes a SHA-1 hash of 'input'.
+  */
+ bool sha1(const unsigned char* input, const size_t inputLen, unsigned char* output) {
+-    EVP_MD_CTX digestCtx;
+-    EVP_MD_CTX_init(&digestCtx);
+-    ON_BLOCK_EXIT(EVP_MD_CTX_cleanup, &digestCtx);
++EVP_MD_CTX *digestCtx = EVP_MD_CTX_create();
++    if (!digestCtx) {
++        return false;
++    }
+ 
+-    if (1 != EVP_DigestInit_ex(&digestCtx, EVP_sha1(), NULL)) {
++    EVP_MD_CTX_init(digestCtx);
++    #if OPENSSL_VERSION_NUMBER < 0x10100000L
++    ON_BLOCK_EXIT(EVP_MD_CTX_destroy, digestCtx);
++    #else
++    ON_BLOCK_EXIT(EVP_MD_CTX_free, digestCtx);
++    #endif
++    if (1 != EVP_DigestInit_ex(digestCtx, EVP_sha1(), NULL)) {
+         return false;
+     }
+ 
+-    if (1 != EVP_DigestUpdate(&digestCtx, input, inputLen)) {
++    if (1 != EVP_DigestUpdate(digestCtx, input, inputLen)) {
+         return false;
+     }
+ 
+-    return (1 == EVP_DigestFinal_ex(&digestCtx, output, NULL));
++    return (1 == EVP_DigestFinal_ex(digestCtx, output, NULL));
+ }
+ 
+ /*
+

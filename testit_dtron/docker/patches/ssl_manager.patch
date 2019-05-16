@@ -1,0 +1,17 @@
+--- /catkin_ws/build/mongodb_store/libmongocxx_ros/mongocxx/src/mongocxx/src/mongo/util/net/ssl_manager.cpp        2019-05-16 08:22:39.043764646 +0000
++++ /catkin_ws/build/mongodb_store/libmongocxx_ros/mongocxx/src/mongocxx/src/mongo/util/net/ssl_manager_patched.cpp     2019-05-16 08:20:52.647610879 +0000
+@@ -628,7 +628,12 @@
+ 
+ bool SSLManager::_setSubjectName(const std::string& keyFile, std::string& subjectName) {
+     // Read the certificate subject name and store it
+-    BIO* in = BIO_new(BIO_s_file_internal());
++    BIO* in;
++    #if OPENSSL_VERSION_NUMBER < 0x10100000L
++    in = BIO_new(BIO_s_file_internal());
++    #else
++    in = BIO_new(BIO_s_file());
++    #endif
+     if (NULL == in) {
+         error() << "failed to allocate BIO object: " << getSSLErrorMessage(ERR_get_error()) << endl;
+         return false;
+

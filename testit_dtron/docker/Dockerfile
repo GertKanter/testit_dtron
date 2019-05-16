@@ -1,45 +1,34 @@
 # VERSION 0.0.1
 FROM testitros/testit:latest
 LABEL Description="TestIt! DTRON extension Docker image"
+# copy patches to docker context
+COPY patches/*.patch /
 RUN apt-get update && \
-# install autoconf and scons
-	apt-get install -y autoconf scons && \
-# install Java 8, Lunar packages
-	apt-get install software-properties-common -y && \
-	add-apt-repository ppa:webupd8team/java -y && \
-	apt-get update && \
-	echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-	echo debconf shared/accepted-oracle-license-v1-1 seen true | debconf-set-selections && \
-	apt-get install oracle-java8-installer -y && \
-	apt-get install -y ros-lunar-move-base-msgs && \
-        # install libgpgp and mongoc
-        apt-get install -y libgpgme11-dev libmongoc-dev && \
-#	mkdir /opt/ros/mongodb_store && \
+        # Install Java 8
+        apt-get install -y scons libfftw3-dev openjdk-8-jdk openjdk-8-jre && \
         cd /catkin_ws/src && \
-# install Spread and Google Protobuf
-	git clone https://github.com/GertKanter/testit_msgs && \
+        # install Spread and Google Protobuf
 	git clone https://github.com/GertKanter/testit_dtron -b develop && \
 	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
-# clone STRANDS packages
+        # clone STRANDS packages to support topological navigation
 	git clone https://github.com/strands-project/strands_navigation.git && \
-	apt-get install -y ros-lunar-map-server ros-lunar-costmap-2d ros-lunar-navfn && \
+        apt-get install -y ros-melodic-costmap-2d ros-melodic-navfn ros-melodic-move-base-msgs ros-melodic-octomap-server && \
 	git clone https://github.com/strands-project/mongodb_store.git && \
-	cd /catkin_ws/src/mongodb_store && \
-	git checkout 09d587f53dc2c5ebe5865d9ec98af447fd91fbe4 && \
-	cd /catkin_ws/src && \
 	git clone https://github.com/strands-project/strands_apps.git && \
 	git clone https://github.com/strands-project/strands_movebase && \
 	git clone https://github.com/strands-project/fremen.git && \
-	mv /catkin_ws/src/fremen/FremenServer /catkin_ws/src/strands_navigation/ && \
-	rm -rf /catkin_ws/src/fremen/ && \
-        rm -rf /catkin_ws/src/strands_apps/odometry_mileage/ && \
-        rm -rf /catkin_ws/src/strands_navigation/topological_rviz_tools/ && \
-	/bin/bash -c "source /opt/ros/lunar/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON -DCMAKE_CXX_FLAGS=-std=c++11" && \
+        # Build packages
+	/bin/bash -c "source /opt/ros/melodic/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON -DCMAKE_CXX_FLAGS=-std=c++11 || true" && \
+        # patch packages
+        cd / && \
+        for i in /*.patch; do patch -p0 < $i; done && \
+        # Build packages
+	/bin/bash -c "source /opt/ros/melodic/setup.bash && cd /catkin_ws && catkin_make -DBUILD_TESTIT_DTRON_PACKAGE=ON -DCMAKE_CXX_FLAGS=-std=c++11" && \
 # configure Spread
 	useradd spread && usermod -a -G spread spread && \
 	mkdir -m 777 /var/run/spread && \
 	echo 'export PATH=$PATH:/catkin_ws/spread/sbin' >> ~/.bashrc && \
-	echo 'source /opt/ros/lunar/setup.bash' >> ~/.bashrc && \
+	echo 'source /opt/ros/melodic/setup.bash' >> ~/.bashrc && \
 # install required architecture for running TRON
 	dpkg --add-architecture i386 && \
 	apt-get update && \
