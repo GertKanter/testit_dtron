@@ -1,0 +1,14 @@
+<launch>
+  <!-- THIS FILE IS LAUNCHED INSIDE THE TESTIT DOCKER CONTAINER -->
+  <!-- (adapters are launched inside TestIt containers) -->
+  <arg name="waypoints" default="" />
+  <arg name="configuration" />
+  <arg name="adapter_launch_file" />
+  
+  <group if="$(eval arg('waypoints')) != "")>
+    <rosparam command="load" file="$(arg waypoints)"/>
+  </group>
+  <rosparam command="load" file="$(arg configuration)"/>
+
+  <include file="$(arg adapter_launch_file)"/>
+</launch>
