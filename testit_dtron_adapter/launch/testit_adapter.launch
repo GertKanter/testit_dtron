@@ -5,7 +5,7 @@
   <arg name="configuration" />
   <arg name="adapter_launch_file" />
   
-  <group if="$(eval arg('waypoints')) != "")>
+  <group if="$(eval arg('waypoints')) != '')">
     <rosparam command="load" file="$(arg waypoints)"/>
   </group>
   <rosparam command="load" file="$(arg configuration)"/>
