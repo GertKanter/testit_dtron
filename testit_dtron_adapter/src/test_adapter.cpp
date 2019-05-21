@@ -418,7 +418,7 @@ public:
           double x, y;
           nh_.getParam("/test_adapter/nodes/" + node_name + "/x", x);
           nh_.getParam("/test_adapter/nodes/" + node_name + "/y", y);
-          goal.target_pose.header.frame_id = "/map";
+          goal.target_pose.header.frame_id = "map";
           goal.target_pose.pose.position.x = x;
           goal.target_pose.pose.position.y = y;
           goal.target_pose.pose.position.z = 0;
