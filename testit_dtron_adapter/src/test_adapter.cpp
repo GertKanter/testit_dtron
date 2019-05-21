@@ -471,7 +471,7 @@ public:
       dx = ((double)x) / 10.0;
       dy = ((double)y) / 10.0;
       da = ((double)a) / 10.0;
-      goal.target_pose.header.frame_id = "/map";
+      goal.target_pose.header.frame_id = "map";
       goal.target_pose.pose.position.x = dx;
       goal.target_pose.pose.position.y = dy;
       goal.target_pose.pose.position.z = 0;
