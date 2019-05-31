@@ -6,9 +6,10 @@ COPY patches/*.patch /
 RUN apt-get update && \
         # Install Java 8
         apt-get install -y scons libfftw3-dev openjdk-8-jdk openjdk-8-jre && \
+        # Install TestIt DTRON extension
         cd /catkin_ws/src && \
-        # install Spread and Google Protobuf
 	git clone https://github.com/GertKanter/testit_dtron -b develop && \
+        # Install Spread and Google Protobuf
 	/bin/bash -c "/catkin_ws/src/testit_dtron/testit_dtron/scripts/build_inside_docker.sh" && \
         # clone STRANDS packages to support topological navigation
 	git clone https://github.com/strands-project/strands_navigation.git && \

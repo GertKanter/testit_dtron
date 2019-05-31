@@ -1,11 +1,31 @@
 tests:
   - tag: "Scenario #1" # identifier for reporting
+    concurrency: 1
+    credits: 1
+    pipeline: "" # empty for any
+    verbose: True # set to True for more verbose information
+    uppaalModel: "testit_tests/fixtures/01/model.xml" # uppaal Model used for this test
+    loggerConfiguration: "testit_tests/fixtures/01/logger.yaml" # define the TestIt logger configuration file  path, w.r.t. 'sharedDirectory' directory (e.g., "testit_tests/fixtures/01/logger.yaml")
+    preLaunchCommand: "rosrun testit_dtron run_dtron_test.sh" # command to execute before executing 'launch', useful for sanity check
+    launch: "(roslaunch testit_dtron_tutorials testit_adapter_coverage.launch waypoints:=\"[[sharedDirectory]]testit_tests/fixtures/01/waypoints.yaml\" coverage_output_directory:=\"[[sharedDirectory]][[resultsDirectory]]\" &); (sleep 10 && rosrun testit_dtron run_dtron_test.sh [[sharedDirectory]][[uppaalModel]])" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
+    oracle: "[[sharedDirectory]]testit_tests/tests/01/oracle/oracle.py -24.1 6.52" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+    timeout: 120 # time in seconds for timeout (0 for no timeout)
+    timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
+    postCommand: "echo 'Test finished!'" # it is possible to execute shell commands after running the test
+    bagEnabled: True
+    bagMaxSplits: "" # empty = use default
+    bagDuration: "" # empty = use default
+
+  - tag: "Scenario #2" # identifier for reporting
+    concurrency: 1
+    priority: 1
+    credits: 2
     pipeline: "" # empty for any
     verbose: True # set to True for more verbose information
     uppaalModel: "fixtures/01/model.xml" # uppaal Model used for this test
     preLaunchCommand: "rosrun testit_dtron run_dtron_test.sh" # command to execute before executing 'launch', useful for sanity check
     launch: "(roslaunch testit_dtron_tutorials testit_adapter_coverage.launch waypoints:=\"[[sharedDirectory]]testit_tests/fixtures/01/waypoints.yaml\" coverage_output_directory:=\"[[sharedDirectory]][[resultsDirectory]]\" &); (sleep 10 && rosrun testit_dtron run_dtron_test.sh [[sharedDirectory]]testit_tests/[[uppaalModel]])" # how to execute this test (run command) in TestIt container, if empty, then assumed that test is not explicitly executed (already started at runSUT and oracle is used to determine pass/fail)
-    oracle: "[[sharedDirectory]]testit_tests/tests/01/oracle/oracle.py 24.1 6.52" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
+    oracle: "[[sharedDirectory]]testit_tests/tests/01/oracle/oracle.py -24.1 6.52" # determining whether pass/fail, if empty = "launch" execution result will be used to determine pass/fail
     timeout: 60 # time in seconds for timeout (0 for no timeout)
     timeoutVerdict: False # if timeout occurs, declare the test as this (False = fail, True = success)
     postCommand: "echo 'Test finished!'" # it is possible to execute shell commands after running the test
@@ -34,7 +54,7 @@ configuration:
   bringupTestItDelay: 0 # duration to wait after command
   bringupTestItTimeout: 1
   bringupTestItFinishTrigger: "-"
-  runTestIt: "docker run --rm --volume=[[testItVolume]]:[[sharedDirectory]] --net=rosnetwork --env ROS_HOSTNAME=[[testItHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testItHost]] -dt testit_dtron_tb_coverage_testit:latest /bin/bash -c '/catkin_ws/spread/sbin/spread -c [[sharedDirectory]]cfg/spread.conf'" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
+  runTestIt: "docker run --rm --volume=[[testItVolume]]:[[sharedDirectory]] --net=rosnetwork --env ROS_HOSTNAME=[[testItHost]] --env ROS_MASTER_URI=http://[[masterHost]]:11311 --name [[testItHost]] -dt testit_dtron_tb_coverage_testit:latest /bin/bash -c \"/catkin_ws/spread/sbin/spread -c [[sharedDirectory]]cfg/spread.conf\"" # how to bring up a pipeline TestIt (general case), you can use "[[]]" for replacing 
   runTestItDelay: 10 # duration to wait after command
   runTestItTimeout: 5
   runTestItFinishTrigger: "-"
@@ -52,13 +72,14 @@ configuration:
 
 pipelines:
   - tag: "Pipeline #1" # identifier for reporting
-    sutConnection: "-" # (e.g., "user@pipe1.domain.com"). "-" means no command (ssh, scp) wrapping, execute docker and other commands on localhost. Note that bringup/teardown are not wrapped. Run/stop + test commands are wrapped
-    testItConnection: "-" # see above
+    identityFile: "~/.ssh/testit_rsa" # "-" means none. If you need to specify the identity file for SSH/SCP, e.g., "~/.ssh/testit_rsa" means that this will be prepended to SSH/SCP commands like this "-i ~/.ssh/testit_rsa user@pipe1.domain.com".
+    sutConnection: "bot@localhost" # (e.g., "user@pipe1.domain.com"). If you need to specify the identity file prepend "-i fullpath " to the string, e.g., "-i ~/.ssh/testit_rsa user@pipe1.domain.com". "-" means no command (ssh, scp) wrapping, execute docker and other commands on localhost. Note that bringup/teardown are not wrapped. Run/stop + test commands are wrapped
+    testItConnection: "bot@localhost" # see above
     masterHost: "sut1"
     testItHost: "testit1"
     masterIP: "-" # where SUT roscore is running (used if masterHost is not defined) ("-" means none)
     testItIP: "-" # where TestIt docker container is running (used if testitHost is not defined) ("-" means none)
-    testItVolume: "$(rospack find testit_dtron_tutorials)/turtlebot_coverage/" # where TestIt volume is located (test scenarios + bags are stored there) at the [[testItConnection]] host.
+    testItVolume: "$(source ~/testit_catkin/devel/setup.bash && rospack find testit_dtron_tutorials)/turtlebot_coverage/" # where TestIt volume is located (test scenarios + bags are stored there) at the [[testItConnection]] host.
     sharedDirectory: "/testit/" # shared volume for TestIt docker container (shared files with host)
     resultsDirectory: "testit_tests/results/" # where to store results inside TestIt docker w.r.t. sharedDirectory (i.e., sharedDirectory="/testit/" and resultsDirectory="testit_tests/results/" => results will be stored in "/testit/testit_tests/results")
     bringupSUT: "" # empty string = use default
