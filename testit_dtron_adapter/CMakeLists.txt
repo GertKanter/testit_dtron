@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(testit_dtron_adapter)
 
-option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" OFF)
+option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" ON)
 
 if (BUILD_TESTIT_DTRON_PACKAGE)
   find_package(catkin REQUIRED COMPONENTS
-          roscpp
-          rospy
-          std_msgs
-          genmsg
-          tf
-          move_base_msgs
-          actionlib
-          testit_msgs
+  roscpp
+  rospy
+  std_msgs
+  genmsg
+  tf
+  move_base_msgs
+  actionlib
+  testit_msgs
+  message_generation
   )
 
   SET(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CATKIN_PACKAGE_LIB_DESTINATION})
@@ -22,7 +23,7 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
 
   catkin_package(
     INCLUDE_DIRS include
-    #CATKIN_DEPENDS other_catkin_pkg
+    CATKIN_DEPENDS message_runtime
     DEPENDS Spread
   )
 
@@ -36,6 +37,17 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
 
   add_library(xtaproto_lib
     src/xtaproto.pb.cc
+  )
+
+  add_service_files(
+    FILES
+    HandleSpreadMessage.srv
+  )
+  catkin_python_setup()
+
+  generate_messages(
+    DEPENDENCIES
+    std_msgs
   )
 
   add_executable(test_adapter src/test_adapter.cpp)

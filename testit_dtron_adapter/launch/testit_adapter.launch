@@ -2,13 +2,21 @@
   <!-- THIS FILE IS LAUNCHED INSIDE THE TESTIT DOCKER CONTAINER -->
   <!-- (adapters are launched inside TestIt containers) -->
   <arg name="waypoints" default="" />
-  <arg name="configuration" />
+  <arg name="configuration" default="" />
+  <arg name="model_configuration" default="" />
   <arg name="adapter_launch_file" />
   
   <group if="$(eval arg('waypoints') != '')">
     <rosparam command="load" file="$(arg waypoints)"/>
   </group>
-  <rosparam command="load" file="$(arg configuration)"/>
+  <group if="$(eval arg('configuration') != '')">
+    <rosparam command="load" file="$(arg configuration)"/>
+  </group>
+
+  <group if="$(eval arg('model_configuration') != '')">
+    <rosparam command="load" file="$(arg model_configuration)"/>
+  </group>
+  <node name="handle_spread_message" pkg="testit_dtron_adapter" type="handle_spread_message_service.py" output="screen"/>
 
   <include file="$(arg adapter_launch_file)"/>
 </launch>

@@ -23,7 +23,7 @@
 #include <std_msgs/Bool.h>
 
 #include <testit_msgs/Coverage.h>
-
+#include "testit_dtron_adapter/HandleSpreadMessage.h"
 
 struct SpreadMessage {
   int Type;
@@ -236,10 +236,11 @@ private:
   dtron_test_adapter::TestAdapter* testAdapter_;
   actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_;
   actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_;
+  ros::ServiceClient handle_spread_message_client_;
   std::map<std::string, std::string> node_map_;
   ros::NodeHandle nh_;
   std::vector<std::string> sync_input_;
-  std::string sync_output_;
+  std::vector<std::string> sync_output_;
   std::string robot_name_;
   std::string object_detector_topic_;
   ros::Subscriber object_detector_sub_;
@@ -254,7 +255,7 @@ public:
   Adapter(ros::NodeHandle nh,
       std::string goal_topic,
       std::vector<std::string> sync_input,
-      std::string sync_output,
+      std::vector<std::string> sync_output,
       std::string waypoint_goal_topic,
       std::string robot_name,
       std::string object_detector_topic,
@@ -277,6 +278,7 @@ public:
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
+      handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message")
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
       nh.getParam("/test_adapter/node_map", node_map_);
       ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
@@ -375,9 +377,21 @@ public:
     return true;
   }
 
+  std::string spreadMessageToYamlString(std::string name, std::map<std::string, int> args) {
+    std::string paramString = "name: " + name
+    for (const auto &value : args) {
+      paramString += "\n"
+      paramString += value.first + ": " + std::to_string(value.second)
+    }
+    return paramString
+  }
+
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
     flushCoverage(name, args, "PRE");
+    std::vector<string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name)
+    int index = std::distance(sync_input_.begin(), it)
+    std::string sync_output = sync_output_[index]
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -452,7 +466,7 @@ public:
           vars["value"] = -1; // -1 == FAIL
           ROS_WARN("Action result was not SUCCEEDED!");
         }
-        testAdapter_->sendMessage(sync_output_.c_str(), vars);
+        testAdapter_->sendMessage(sync_output.c_str(), vars);
       }
       else
       {
@@ -494,7 +508,7 @@ public:
           vars["value"] = -1; // -1 == FAIL
           ROS_ERROR("Action result was not SUCCEEDED!");
         }
-        testAdapter_->sendMessage(sync_output_.c_str(), vars);
+        testAdapter_->sendMessage(sync_output.c_str(), vars);
       }
       else
       {
@@ -510,7 +524,20 @@ public:
         vars["value"] = 2; // detected == 2
       else
         vars["value"] = 1; // not detected == 1
-      testAdapter_->sendMessage(sync_output_.c_str(), vars);
+      testAdapter_->sendMessage(sync_output.c_str(), vars);
+    }
+    else
+    {
+      std::map<std::string, int> vars;
+      testit_spread_adapter::HandleSpreadMessage srv;
+      srv.request.input = spreadMessageToYamlString(name, args)
+      auto call_success = handle_spread_message_client_.call(srv)
+      if (call_success && (bool)srv.response.response) {
+        vars["value"] = 1
+      } else {
+        vars["value"] = -1
+      }
+      testAdapter_->sendMessage(sync_output.c_str(), vars)
     }
     flushCoverage(name, args, "POST");
     ROS_INFO("Finished message processing.");
@@ -559,9 +586,12 @@ int main(int argc, char** argv) {
   {
     groups.push_back(it->c_str());
   }
-  std::string sync_output;
+  std::vector<std::string> sync_output;
   nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/output", sync_output);
-  groups.push_back(sync_output.c_str());
+  for (std::vector<std::string>::const_iterator it = sync_output.begin(); it != sync_output.end(); ++it)
+  {
+    groups.push_back(it->c_str());
+  }
   std::string goal_topic;
   nh.getParam("/test_adapter/"+robot_name+"/goal", goal_topic);
   std::string waypoint_goal_topic;
