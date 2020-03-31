@@ -378,20 +378,20 @@ public:
   }
 
   std::string spreadMessageToYamlString(std::string name, std::map<std::string, int> args) {
-    std::string paramString = "name: " + name
+    std::string paramString = "name: " + name;
     for (const auto &value : args) {
-      paramString += "\n"
-      paramString += value.first + ": " + std::to_string(value.second)
+      paramString += "\n";
+      paramString += value.first + ": " + std::to_string(value.second);
     }
-    return paramString
+    return paramString;
   }
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
     flushCoverage(name, args, "PRE");
-    std::vector<string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name)
-    int index = std::distance(sync_input_.begin(), it)
-    std::string sync_output = sync_output_[index]
+    std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
+    int index = std::distance(sync_input_.begin(), it);
+    std::string sync_output = sync_output_[index];
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -530,14 +530,14 @@ public:
     {
       std::map<std::string, int> vars;
       testit_spread_adapter::HandleSpreadMessage srv;
-      srv.request.input = spreadMessageToYamlString(name, args)
-      auto call_success = handle_spread_message_client_.call(srv)
+      srv.request.input = spreadMessageToYamlString(name, args);
+      auto call_success = handle_spread_message_client_.call(srv);
       if (call_success && (bool)srv.response.response) {
-        vars["value"] = 1
+        vars["value"] = 1;
       } else {
-        vars["value"] = -1
+        vars["value"] = -1;
       }
-      testAdapter_->sendMessage(sync_output.c_str(), vars)
+      testAdapter_->sendMessage(sync_output.c_str(), vars);
     }
     flushCoverage(name, args, "POST");
     ROS_INFO("Finished message processing.");
