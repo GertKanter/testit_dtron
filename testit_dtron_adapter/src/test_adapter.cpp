@@ -278,7 +278,7 @@ public:
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
-      handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message")
+      handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
       nh.getParam("/test_adapter/node_map", node_map_);
       ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
