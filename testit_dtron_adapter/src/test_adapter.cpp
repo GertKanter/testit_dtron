@@ -529,7 +529,7 @@ public:
     else
     {
       std::map<std::string, int> vars;
-      testit_spread_adapter::HandleSpreadMessage srv;
+      testit_dtron_adapter::HandleSpreadMessage srv;
       srv.request.input = spreadMessageToYamlString(name, args);
       auto call_success = handle_spread_message_client_.call(srv);
       if (call_success && (bool)srv.response.response) {
