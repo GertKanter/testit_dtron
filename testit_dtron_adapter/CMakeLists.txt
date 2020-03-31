@@ -21,6 +21,11 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
   SET(PROTOBUF_INCLUDE_DIRS "/catkin_ws/protobuf/include")
   SET(topological_navigation_INCLUDE_DIRS "/catkin_ws/devel/include")
 
+  add_service_files(
+    FILES
+    HandleSpreadMessage.srv
+  )
+
   generate_messages(
     DEPENDENCIES
     std_msgs
@@ -44,10 +49,6 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
     src/xtaproto.pb.cc
   )
 
-  add_service_files(
-    FILES
-    HandleSpreadMessage.srv
-  )
   catkin_python_setup()
 
   add_executable(test_adapter src/test_adapter.cpp)
