@@ -596,20 +596,19 @@ Adapter::Adapter(ros::NodeHandle nh,
                std::string coverage_format,
                std::string coverage_output,
                std::string proxy_suffix) :
-   try :
-   nh_(nh),
-   sync_input_(sync_input),
-   sync_output_(sync_output),
-   robot_name_(robot_name),
-   object_detector_topic_(object_detector_topic),
-   object_detected_(false),
-   coverage_enabled_(coverage_enabled),
-   coverage_format_(coverage_format),
-   coverage_output_(coverage_output),
-   proxy_suffix_(proxy_suffix),
-   coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
-   ac_movebase_(goal_topic + proxy_suffix, true),
-   ac_topological_(waypoint_goal_topic + proxy_suffix, true)
+   try : nh_(nh),
+         sync_input_(sync_input),
+         sync_output_(sync_output),
+         robot_name_(robot_name),
+         object_detector_topic_(object_detector_topic),
+         object_detected_(false),
+         coverage_enabled_(coverage_enabled),
+         coverage_format_(coverage_format),
+         coverage_output_(coverage_output),
+         proxy_suffix_(proxy_suffix),
+         coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
+         ac_movebase_(goal_topic + proxy_suffix, true),
+         ac_topological_(waypoint_goal_topic + proxy_suffix, true)
    {
 
      sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
