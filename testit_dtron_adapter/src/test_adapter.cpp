@@ -234,14 +234,14 @@ namespace dtron_test_adapter {
 class Adapter {
 private:
   dtron_test_adapter::TestAdapter* testAdapter_;
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_;
-  actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_;
   ros::ServiceClient handle_spread_message_client_;
   std::map<std::string, std::string> node_map_;
   ros::NodeHandle nh_;
   std::vector<std::string> sync_input_;
   std::vector<std::string> sync_output_;
   std::string robot_name_;
+  std::string waypoint_goal_topic_;
+  std::string goal_topic_;
   std::string object_detector_topic_;
   ros::Subscriber object_detector_sub_;
   bool coverage_enabled_;
@@ -267,6 +267,8 @@ public:
     sync_input_(sync_input),
     sync_output_(sync_output),
     robot_name_(robot_name),
+    goal_topic_(goal_topic)
+    waypoint_goal_topic_(waypoint_goal_topic)
     object_detector_topic_(object_detector_topic),
     object_detected_(false),
     coverage_enabled_(coverage_enabled),
@@ -275,10 +277,6 @@ public:
     proxy_suffix_(proxy_suffix),
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
-      try {
-        actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic + proxy_suffix, true);
-        actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_(waypoint_goal_topic + proxy_suffix, true);
-      } catch (...) {}
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
@@ -394,6 +392,8 @@ public:
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
     int index = std::distance(sync_input_.begin(), it);
     std::string sync_output = sync_output_[index];
+    try {
+    } catch (...) {}
     if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
@@ -410,6 +410,7 @@ public:
         std::map<std::string, int> vars;
         if (mode == 1) // topological_navigation mode
         {
+          actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_(waypoint_goal_topic_ + proxy_suffix_, true);
           topological_navigation::GotoNodeGoal goal;
           goal.target = node_name;
           ROS_INFO("Goal node = %s", node_name.c_str());
@@ -430,6 +431,7 @@ public:
         }
         else
         {
+          actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic_ + proxy_suffix_, true);
           move_base_msgs::MoveBaseGoal goal;
           double x, y;
           nh_.getParam("/test_adapter/nodes/" + node_name + "/x", x);
@@ -477,6 +479,7 @@ public:
     }
     else if (name.find("moveto") != std::string::npos)
     {
+      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic_ + proxy_suffix_, true);
       // "moveto" sync
       ROS_DEBUG("moveto sync handler!");
       int x = boost::lexical_cast<int>(args["x"]);
@@ -533,7 +536,7 @@ public:
       std::map<std::string, int> vars;
       testit_dtron_adapter::HandleSpreadMessage srv;
       srv.request.input = spreadMessageToYamlString(name, args);
-      auto call_success = handle_spread_message_client_.call(srv);
+      bool call_success = handle_spread_message_client_.call(srv);
       if (call_success && (bool)srv.response.response) {
         vars["value"] = 1;
       } else {
