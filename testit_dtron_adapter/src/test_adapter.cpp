@@ -263,8 +263,6 @@ public:
       std::string coverage_format,
       std::string coverage_output,
       std::string proxy_suffix) :
-    ac_movebase_(goal_topic + proxy_suffix, true),
-    ac_topological_(waypoint_goal_topic + proxy_suffix, true),
     nh_(nh),
     sync_input_(sync_input),
     sync_output_(sync_output),
@@ -276,7 +274,11 @@ public:
     coverage_output_(coverage_output),
     proxy_suffix_(proxy_suffix),
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
+    try :
+    ac_movebase_(goal_topic + proxy_suffix, true),
+    ac_topological_(waypoint_goal_topic + proxy_suffix, true)
     {
+
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
@@ -299,7 +301,7 @@ public:
       if (object_detector_topic_ != "")
         object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
       ROS_INFO("Adapter is ready for use!");
-    }
+    } catch (...) {}
 
   void objectDetectorCallback(const std_msgs::Bool::ConstPtr& msg) {
     if (msg->data)
