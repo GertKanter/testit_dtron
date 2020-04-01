@@ -276,8 +276,8 @@ public:
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
       try {
-        ac_movebase_(goal_topic + proxy_suffix, true);
-        ac_topological_(waypoint_goal_topic + proxy_suffix, true);
+        ac_movebase_ = actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>(goal_topic + proxy_suffix, true);
+        ac_topological_ = actionlib::SimpleActionClient<topological_navigation::GotoNodeAction>(waypoint_goal_topic + proxy_suffix, true);
       } catch (...) {}
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
