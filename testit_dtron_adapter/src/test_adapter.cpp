@@ -275,6 +275,10 @@ public:
     proxy_suffix_(proxy_suffix),
     coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
     {
+      try {
+        actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic + proxy_suffix, true);
+        actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_(waypoint_goal_topic + proxy_suffix, true);
+      } catch (...) {}
       sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
