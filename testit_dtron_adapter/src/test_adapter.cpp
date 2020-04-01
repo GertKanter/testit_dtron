@@ -262,46 +262,7 @@ public:
       bool coverage_enabled,
       std::string coverage_format,
       std::string coverage_output,
-      std::string proxy_suffix) :
-    nh_(nh),
-    sync_input_(sync_input),
-    sync_output_(sync_output),
-    robot_name_(robot_name),
-    object_detector_topic_(object_detector_topic),
-    object_detected_(false),
-    coverage_enabled_(coverage_enabled),
-    coverage_format_(coverage_format),
-    coverage_output_(coverage_output),
-    proxy_suffix_(proxy_suffix),
-    coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
-    try :
-    ac_movebase_(goal_topic + proxy_suffix, true),
-    ac_topological_(waypoint_goal_topic + proxy_suffix, true)
-    {
-
-      sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
-      handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
-      ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
-      nh.getParam("/test_adapter/node_map", node_map_);
-      ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
-      //if (navigation_mode_ != "waypoint") {
-        //ROS_INFO("Connecting to move_base action server @ %s", goal_topic.c_str());
-        /*ac_movebase_.waitForServer(ros::Duration(1.0));
-        if (!ac_movebase_.isServerConnected()) {
-          ROS_ERROR("Unable to connect to move_base action server!");
-        }*/
-      //} else {
-        //ROS_INFO("Connecting to topological_navigation action server @ %s", waypoint_goal_topic.c_str());
-        /*ac_topological_.waitForServer(ros::Duration(4.0));
-        if (!ac_topological_.isServerConnected()) {
-          ROS_ERROR("Unable to connect to topological_navigation action server!");
-        }*/
-      //}
-      // Subscribe to topics
-      if (object_detector_topic_ != "")
-        object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
-      ROS_INFO("Adapter is ready for use!");
-    } catch (...) {}
+      std::string proxy_suffix);
 
   void objectDetectorCallback(const std_msgs::Bool::ConstPtr& msg) {
     if (msg->data)
@@ -623,3 +584,54 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
+
+Adapter::Adapter(ros::NodeHandle nh,
+               std::string goal_topic,
+               std::vector<std::string> sync_input,
+               std::vector<std::string> sync_output,
+               std::string waypoint_goal_topic,
+               std::string robot_name,
+               std::string object_detector_topic,
+               bool coverage_enabled,
+               std::string coverage_format,
+               std::string coverage_output,
+               std::string proxy_suffix) :
+   try :
+   nh_(nh),
+   sync_input_(sync_input),
+   sync_output_(sync_output),
+   robot_name_(robot_name),
+   object_detector_topic_(object_detector_topic),
+   object_detected_(false),
+   coverage_enabled_(coverage_enabled),
+   coverage_format_(coverage_format),
+   coverage_output_(coverage_output),
+   proxy_suffix_(proxy_suffix),
+   coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
+   ac_movebase_(goal_topic + proxy_suffix, true),
+   ac_topological_(waypoint_goal_topic + proxy_suffix, true)
+   {
+
+     sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
+     handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
+     ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
+     nh.getParam("/test_adapter/node_map", node_map_);
+     ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
+     //if (navigation_mode_ != "waypoint") {
+       //ROS_INFO("Connecting to move_base action server @ %s", goal_topic.c_str());
+       /*ac_movebase_.waitForServer(ros::Duration(1.0));
+       if (!ac_movebase_.isServerConnected()) {
+         ROS_ERROR("Unable to connect to move_base action server!");
+       }*/
+     //} else {
+       //ROS_INFO("Connecting to topological_navigation action server @ %s", waypoint_goal_topic.c_str());
+       /*ac_topological_.waitForServer(ros::Duration(4.0));
+       if (!ac_topological_.isServerConnected()) {
+         ROS_ERROR("Unable to connect to topological_navigation action server!");
+       }*/
+     //}
+     // Subscribe to topics
+     if (object_detector_topic_ != "")
+       object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
+     ROS_INFO("Adapter is ready for use!");
+   } catch (...) {}
