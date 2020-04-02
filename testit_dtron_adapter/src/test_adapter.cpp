@@ -210,6 +210,7 @@ namespace dtron_test_adapter {
 
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
     Sync sync;
+    printf("Received spread message: '%s', group: '%s', sender: '%s'", msg, group, sender);
     sync.ParseFromString(msg);
     if ((sync.name() != "") && sender != NULL) {
       printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
