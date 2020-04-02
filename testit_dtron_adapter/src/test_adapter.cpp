@@ -392,146 +392,6 @@ public:
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
     int index = std::distance(sync_input_.begin(), it);
     std::string sync_output = sync_output_[index];
-
-    /*if (name.find("goto") != std::string::npos)
-    {
-      // "goto" sync
-      ROS_DEBUG("goto sync handler!");
-      std::string waypoint = boost::lexical_cast<std::string>(args["waypoint"]);
-      int mode = 1;
-      if (args.count("mode") == 1)
-        mode = args["mode"];
-      std::string node_name = node_map_[waypoint];
-      std::string robot_name = robot_name_;
-      if(node_name != "")
-      {
-        actionlib::SimpleClientGoalState state(actionlib::SimpleClientGoalState::PENDING);
-        std::map<std::string, int> vars;
-        if (mode == 1) // topological_navigation mode
-        {
-          actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_(waypoint_goal_topic_ + proxy_suffix_, true);
-          topological_navigation::GotoNodeGoal goal;
-          goal.target = node_name;
-          ROS_INFO("Goal node = %s", node_name.c_str());
-          if (ac_topological_.isServerConnected())
-          {
-            ac_topological_.sendGoal(goal);
-            ac_topological_.waitForResult();
-            state = ac_topological_.getState();
-          }
-          else {
-            while (!ac_topological_.isServerConnected()) {
-              ROS_ERROR("Topological_navigation action server not connected! Waiting for server (10 s)...");
-              ac_topological_.waitForServer(ros::Duration(10, 0));
-            }
-            receiveMessage(name, args); // Call self to retry
-            return;
-          }
-        }
-        else
-        {
-          actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic_ + proxy_suffix_, true);
-          move_base_msgs::MoveBaseGoal goal;
-          double x, y;
-          nh_.getParam("/test_adapter/nodes/" + node_name + "/x", x);
-          nh_.getParam("/test_adapter/nodes/" + node_name + "/y", y);
-          goal.target_pose.header.frame_id = "map";
-          goal.target_pose.pose.position.x = x;
-          goal.target_pose.pose.position.y = y;
-          goal.target_pose.pose.position.z = 0;
-          goal.target_pose.pose.orientation.x = 0;
-          goal.target_pose.pose.orientation.y = 0;
-          goal.target_pose.pose.orientation.z = 0;
-          goal.target_pose.pose.orientation.w = 1;
-          ROS_INFO("Goal. Node %s, x: %.3f  y: %.3f", node_name.c_str(), x, y);
-          if (ac_movebase_.isServerConnected())
-          {
-            ac_movebase_.sendGoal(goal);
-            ac_movebase_.waitForResult();
-            state = ac_movebase_.getState();
-          }
-          else {
-            while (!ac_movebase_.isServerConnected()) {
-              ROS_ERROR("Move_base action server not connected! Waiting for server (10 s)...");
-              ac_movebase_.waitForServer(ros::Duration(10, 0));
-            }
-            receiveMessage(name, args); // Call self to retry
-            return;
-          }
-        }
-        ROS_INFO("Action finished with state = %s", state.toString().c_str());
-        if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-          vars["value"] = 1; // 1 == SUCCESS
-        }
-        else
-        {
-          vars["value"] = -1; // -1 == FAIL
-          ROS_WARN("Action result was not SUCCEEDED!");
-        }
-        testAdapter_->sendMessage(sync_output.c_str(), vars);
-      }
-      else
-      {
-        ROS_ERROR_STREAM("Unknown goal waypoint (" << waypoint << ")! Sync ignored!");
-      }
-    }
-    else if (name.find("moveto") != std::string::npos)
-    {
-      actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_(goal_topic_ + proxy_suffix_, true);
-      // "moveto" sync
-      ROS_DEBUG("moveto sync handler!");
-      int x = boost::lexical_cast<int>(args["x"]);
-      int y = boost::lexical_cast<int>(args["y"]);
-      int a = boost::lexical_cast<int>(args["a"]);
-      move_base_msgs::MoveBaseGoal goal;
-      double dx, dy, da;
-      dx = ((double)x) / 10.0;
-      dy = ((double)y) / 10.0;
-      da = ((double)a) / 10.0;
-      goal.target_pose.header.frame_id = "map";
-      goal.target_pose.pose.position.x = dx;
-      goal.target_pose.pose.position.y = dy;
-      goal.target_pose.pose.position.z = 0;
-      tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, da);
-      tf::quaternionTFToMsg(q, goal.target_pose.pose.orientation);
-      ROS_INFO("Goal x: %.2f  y: %.2f  a: %.2f", dx, dy, da);
-      if (ac_movebase_.isServerConnected())
-      {
-        ac_movebase_.sendGoal(goal);
-        ac_movebase_.waitForResult();
-        actionlib::SimpleClientGoalState state = ac_movebase_.getState();
-        ROS_INFO("Action finished with state = %s", state.toString().c_str());
-        std::map<std::string, int> vars;
-        if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-          vars["value"] = 1; // 1 == SUCCESS
-        }
-        else
-        {
-          vars["value"] = -1; // -1 == FAIL
-          ROS_ERROR("Action result was not SUCCEEDED!");
-        }
-        testAdapter_->sendMessage(sync_output.c_str(), vars);
-      }
-      else
-      {
-        ROS_ERROR("Move_base action server not connected!");
-      }
-    }
-    else if (name.find("object_detect") != std::string::npos)
-    {
-      // "object_detect" sync
-      ROS_INFO("object_detect sync handler!");
-      std::map<std::string, int> vars;
-      if (object_detected_)
-        vars["value"] = 2; // detected == 2
-      else
-        vars["value"] = 1; // not detected == 1
-      testAdapter_->sendMessage(sync_output.c_str(), vars);
-    }
-    else
-    {*/
     std::map<std::string, int> vars;
     testit_dtron_adapter::HandleSpreadMessage srv;
     srv.request.input = spreadMessageToYamlString(name, args);
@@ -542,10 +402,9 @@ public:
       vars["value"] = -1;
     }
     testAdapter_->sendMessage(sync_output.c_str(), vars);
-    //}
     flushCoverage(name, args, "POST");
     ROS_INFO("Finished message processing.");
-  //}
+  }
 };
 
 int main(int argc, char** argv) {
