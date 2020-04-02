@@ -392,9 +392,8 @@ public:
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
     int index = std::distance(sync_input_.begin(), it);
     std::string sync_output = sync_output_[index];
-    try {
-    } catch (...) {}
-    if (name.find("goto") != std::string::npos)
+
+    /*if (name.find("goto") != std::string::npos)
     {
       // "goto" sync
       ROS_DEBUG("goto sync handler!");
@@ -532,21 +531,21 @@ public:
       testAdapter_->sendMessage(sync_output.c_str(), vars);
     }
     else
-    {
-      std::map<std::string, int> vars;
-      testit_dtron_adapter::HandleSpreadMessage srv;
-      srv.request.input = spreadMessageToYamlString(name, args);
-      bool call_success = handle_spread_message_client_.call(srv);
-      if (call_success && (bool)srv.response.response) {
-        vars["value"] = 1;
-      } else {
-        vars["value"] = -1;
-      }
-      testAdapter_->sendMessage(sync_output.c_str(), vars);
+    {*/
+    std::map<std::string, int> vars;
+    testit_dtron_adapter::HandleSpreadMessage srv;
+    srv.request.input = spreadMessageToYamlString(name, args);
+    bool call_success = handle_spread_message_client_.call(srv);
+    if (call_success && (bool)srv.response.response) {
+      vars["value"] = 1;
+    } else {
+      vars["value"] = -1;
     }
+    testAdapter_->sendMessage(sync_output.c_str(), vars);
+    //}
     flushCoverage(name, args, "POST");
     ROS_INFO("Finished message processing.");
-  }
+  //}
 };
 
 int main(int argc, char** argv) {
