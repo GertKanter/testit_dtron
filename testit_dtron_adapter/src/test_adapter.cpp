@@ -267,8 +267,8 @@ public:
     sync_input_(sync_input),
     sync_output_(sync_output),
     robot_name_(robot_name),
-    goal_topic_(goal_topic)
-    waypoint_goal_topic_(waypoint_goal_topic)
+    goal_topic_(goal_topic),
+    waypoint_goal_topic_(waypoint_goal_topic),
     object_detector_topic_(object_detector_topic),
     object_detected_(false),
     coverage_enabled_(coverage_enabled),
@@ -299,7 +299,7 @@ public:
       if (object_detector_topic_ != "")
         object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
       ROS_INFO("Adapter is ready for use!");
-    } catch (...) {}
+    }
 
   void objectDetectorCallback(const std_msgs::Bool::ConstPtr& msg) {
     if (msg->data)
