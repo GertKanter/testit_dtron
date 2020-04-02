@@ -236,7 +236,6 @@ private:
   std::string robot_name_;
 public:
   Adapter(ros::NodeHandle nh,
-      std::string goal_topic,
       std::vector<std::string> sync_input,
       std::vector<std::string> sync_output,
       std::string robot_name) :
