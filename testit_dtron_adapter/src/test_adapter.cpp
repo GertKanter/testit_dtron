@@ -243,7 +243,7 @@ public:
     nh_(nh),
     sync_input_(sync_input),
     sync_output_(sync_output),
-    robot_name_(robot_name),
+    robot_name_(robot_name)
     {
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
