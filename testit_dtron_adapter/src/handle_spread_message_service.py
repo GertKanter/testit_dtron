@@ -2,6 +2,7 @@
 
 import importlib
 import re
+import threading
 import yaml
 from collections import defaultdict
 
@@ -46,14 +47,19 @@ def success(result, feedback):
 
 
 def get_topic_sender_responder(identifier, id_type, feedback):
+    publishers = {}
+    wait_for_message_locks = defaultdict(threading.Lock)
+
     def send(msg):
-        publisher = rospy.Publisher(identifier, id_type, queue_size=1)
-        publisher.publish(msg)
+        publishers[identifier] = publishers.get(identifier, rospy.Publisher(identifier, id_type, queue_size=1))
+        publishers[identifier].publish(msg)
 
     def get_response():
-        msg = rospy.wait_for_message(feedback.get('topic'), dynamic_import(feedback.get('type')))
-        result = get_attribute(msg, feedback.get('field', ''))
-        return success(result, feedback)
+        feedback_topic = feedback.get('topic')
+        with wait_for_message_locks[feedback_topic]:
+            msg = rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type')))
+            result = get_attribute(msg, feedback.get('field', ''))
+            return success(result, feedback)
 
     return send, get_response
 
