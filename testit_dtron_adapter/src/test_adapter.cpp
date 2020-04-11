@@ -209,21 +209,26 @@ namespace dtron_test_adapter {
   }
 
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
-    Sync sync;
     printf("Received spread message: '%s', group: '%s', sender: '%s'", msg, group, sender);
-    sync.ParseFromString(msg);
-    if ((sync.name() != "") && sender != NULL) {
-      printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
-      std::map<std::string, int> mapOfVariables;
-      for (unsigned int i = 0; i < sync.variables_size(); ++i) {
-        mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
-      }
-      receiveMessage_(sync.name(), mapOfVariables);
-    } else {
-      if (sender == NULL) {
-        printf("Received incorrectly formed message: %s\n", msg);
+    try {
+      Sync sync;
+      sync.ParseFromString(msg);
+      if ((sync.name() != "") && sender != NULL) {
+        printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
+        std::map<std::string, int> mapOfVariables;
+        for (unsigned int i = 0; i < sync.variables_size(); ++i) {
+          mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
+        }
+        receiveMessage_(sync.name(), mapOfVariables);
+      } else {
+        if (sender == NULL) {
+          printf("Received incorrectly formed message: %s\n", msg);
+        }
       }
     }
+    catch (...) {
+      printf("Something went wrong receiving message from spread");
+    };
   }
 }
 
