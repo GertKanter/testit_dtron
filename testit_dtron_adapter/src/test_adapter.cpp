@@ -88,7 +88,7 @@ void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
     spreadMessage = SpreadAdapter::ReadMessage();
-    ROS_INFO("Read message")
+    ROS_INFO("Read message");
     if (spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
