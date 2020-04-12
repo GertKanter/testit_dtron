@@ -134,15 +134,15 @@ SpreadMessage SpreadAdapter::ReadMessage() {
     if (ret == -18) {
       std::cout << "Trying to reconnect" << std::endl;
       SP_disconnect(*Mbox);
+      connectionActive = false;
       int conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
-      if(conn_ret < 0) {
+      while (conn_ret < 0) {
         std::cout << "Failed reconnect" << std::endl;
         SP_error(ret);
-        connectionActive = false;
-      } else {
-        std::cout << "Succeeded reconnect" << std::endl;
-        connectionActive = true;
+        conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
       }
+      std::cout << "Succeeded reconnect" << std::endl;
+      connectionActive = true;
     }
   }
 
