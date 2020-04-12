@@ -271,6 +271,7 @@ public:
     robot_name_(robot_name)
     {
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
+      std::cout << "Max group length: " <<  MAX_GROUP_NAME << std::endl;
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
     }
 
