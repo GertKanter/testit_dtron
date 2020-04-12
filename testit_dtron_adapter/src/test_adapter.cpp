@@ -75,7 +75,6 @@ mailbox* SpreadAdapter::Mailbox() {
 }
 
 SpreadAdapter::SpreadAdapter(mailbox* spreadMailBox) {
-  Mbox = new mailbox;
   Mbox = spreadMailBox;
   connectionActive = true;
 }
@@ -151,6 +150,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   spreadMessage.Group = target_groups[0];
   spreadMessage.Msg = new char[102400];
   spreadMessage.Msg = message;
+  printf("Received spread message: " << spreadMessage.Type << "; " << spreadMessage.Sender << "; " << spreadMessage.Group << "; " << spreadMessage.Msg);
   return spreadMessage;
 }
 
@@ -235,7 +235,7 @@ namespace dtron_test_adapter {
       }
     }
     catch (...) {
-      printf("Something went wrong receiving message from spread");
+      ROS_INFO("Something went wrong receiving message from spread");
     };
   }
 }
