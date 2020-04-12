@@ -87,6 +87,7 @@ int SpreadAdapter::JoinGroup(const char* Name) {
 void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
+    ROS_INFO("Tryna read some message broh");
     spreadMessage = SpreadAdapter::ReadMessage();
     ROS_INFO("Read message");
     if (spreadMessage.Type != -1) {
