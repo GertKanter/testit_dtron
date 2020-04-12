@@ -84,7 +84,7 @@ void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
     spreadMessage = SpreadAdapter::ReadMessage();
-    if(spreadMessage.Type != -1) { 
+    if(spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
   } while (spreadMessage.Type != -1);
@@ -126,6 +126,8 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
   if(ret < 0) {
     SP_error(ret);
+    spreadMessage.Type = -1;
+    return spreadMessage;
   }
 
   if(Is_regular_mess(service_type)){
