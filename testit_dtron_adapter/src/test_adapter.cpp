@@ -132,20 +132,6 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
   if(ret < 0) {
     SP_error(ret);
-    if (ret == -18) {
-      std::cout << "Trying to reconnect" << std::endl;
-      SP_disconnect(*Mbox);
-      connectionActive = false;
-      int conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
-      while (conn_ret < 0) {
-        usleep(5000000);
-        std::cout << "Failed reconnect" << std::endl;
-        SP_error(ret);
-        conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
-      }
-      std::cout << "Succeeded reconnect" << std::endl;
-      connectionActive = true;
-    }
   }
 
   if(Is_regular_mess(service_type)){
@@ -203,6 +189,7 @@ namespace dtron_test_adapter {
         ROS_INFO("Successfully connected to Spread server!");
         for (unsigned int i = 0; i < groups.size(); ++i) {
           spreadAdapter_.JoinGroup(groups[i]);
+          ROS_INFO_STREAM("Joined group: " << groups[i])
         }
         boost::thread spreadMessageReader(&SpreadAdapter::ReaderThread, &spreadAdapter_);
       } else {
