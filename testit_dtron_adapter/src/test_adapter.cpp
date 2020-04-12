@@ -189,7 +189,7 @@ namespace dtron_test_adapter {
         ROS_INFO("Successfully connected to Spread server!");
         for (unsigned int i = 0; i < groups.size(); ++i) {
           spreadAdapter_.JoinGroup(groups[i]);
-          ROS_INFO_STREAM("Joined group: " << groups[i])
+          ROS_INFO_STREAM("Joined group: " << groups[i]);
         }
         boost::thread spreadMessageReader(&SpreadAdapter::ReaderThread, &spreadAdapter_);
       } else {
