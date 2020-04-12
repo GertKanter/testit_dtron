@@ -41,6 +41,8 @@ private:
   boost::function<void (int, char*, char*, char*)> callback;
   bool connectionActive;
   mailbox* Mbox;
+  const char* spreadName;
+  const char* userName;
   char* User;
   char* Spread;
   char* PrivateGroup;
@@ -49,10 +51,12 @@ private:
 
 SpreadAdapter::SpreadAdapter(const char* SpreadName, const char* UserName, boost::function<void (int, char*, char*, char*)> callbackFunction) {
   int ret;
+  spreadName = SpreadName;
+  userName = userName;
   Mbox = new mailbox;
   PrivateGroup = new char[80];
   callback = callbackFunction;
-  ret = SP_connect(SpreadName, UserName, 0, 1, Mbox, PrivateGroup);
+  ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
   if(ret < 0) {
     SP_error(ret);
     connectionActive = false;
@@ -84,7 +88,7 @@ void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
     spreadMessage = SpreadAdapter::ReadMessage();
-    std::cout << spreadMessage.Type << spreadMessage.Sender << spreadMessage.Group << spreadMessage.Msg << std::endl;
+    std::cout << spreadMessage.Type << ";; " << spreadMessage.Sender << ";; " << spreadMessage.Group << ";; " << spreadMessage.Msg << std::endl;
     if(spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
@@ -127,8 +131,18 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
   if(ret < 0) {
     SP_error(ret);
-    spreadMessage.Type = -1;
-    return spreadMessage;
+    if (ret == -18) {
+      std::cout << "Trying to reconnect" << std::endl;
+      conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
+      if(conn_ret < 0) {
+        std::cout << "Succeeded reconnect" << std::endl;
+        SP_error(ret);
+        connectionActive = false;
+      } else {
+        std::cout << "Failed reconnect" << std::endl;
+        connectionActive = true;
+      }
+    }
   }
 
   if(Is_regular_mess(service_type)){
