@@ -129,7 +129,9 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   int16 mess_type;
 
   service_type = 0;
+  ROS_INFO("Reached receive part");
   ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
+  ROS_INFO("Passed receive part");
   if(ret < 0) {
     SP_error(ret);
   }
