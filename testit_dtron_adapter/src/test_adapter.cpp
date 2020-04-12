@@ -150,7 +150,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   spreadMessage.Group = target_groups[0];
   spreadMessage.Msg = new char[102400];
   spreadMessage.Msg = message;
-  printf("Received spread message: " << spreadMessage.Type << "; " << spreadMessage.Sender << "; " << spreadMessage.Group << "; " << spreadMessage.Msg);
+  std::cout << "Received spread message: " << spreadMessage.Type << "; " << spreadMessage.Sender << "; " << spreadMessage.Group << "; " << spreadMessage.Msg << std::endl;
   return spreadMessage;
 }
 
