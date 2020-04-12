@@ -52,7 +52,7 @@ private:
 SpreadAdapter::SpreadAdapter(const char* SpreadName, const char* UserName, boost::function<void (int, char*, char*, char*)> callbackFunction) {
   int ret;
   spreadName = SpreadName;
-  userName = userName;
+  userName = UserName;
   Mbox = new mailbox;
   PrivateGroup = new char[80];
   callback = callbackFunction;
