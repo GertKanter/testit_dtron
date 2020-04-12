@@ -84,6 +84,14 @@ void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
     spreadMessage = SpreadAdapter::ReadMessage();
+    printf(spreadMessage.Type);
+    printf("\n");
+    printf(spreadMessage.Sender);
+    printf("\n");
+    printf(spreadMessage.Group);
+    printf("\n");
+    printf(spreadMessage.Msg);
+    printf("\n");
     if(spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
