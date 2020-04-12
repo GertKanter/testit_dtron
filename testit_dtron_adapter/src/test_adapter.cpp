@@ -16,6 +16,7 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <cstdlib>
+#include <unistd.h>
 
 #include <std_msgs/Bool.h>
 #include "testit_dtron_adapter/HandleSpreadMessage.h"
@@ -137,6 +138,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
       connectionActive = false;
       int conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
       while (conn_ret < 0) {
+        usleep(1000);
         std::cout << "Failed reconnect" << std::endl;
         SP_error(ret);
         conn_ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
