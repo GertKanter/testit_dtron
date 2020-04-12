@@ -89,8 +89,7 @@ void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
     spreadMessage = SpreadAdapter::ReadMessage();
-    std::cout << spreadMessage.Type << ";; " << spreadMessage.Sender << ";; " << spreadMessage.Group << ";; " << spreadMessage.Msg << std::endl;
-    if(spreadMessage.Type != -1) {
+    if (spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
   } while (spreadMessage.Type != -1);
@@ -216,7 +215,7 @@ namespace dtron_test_adapter {
   }
 
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
-    printf("Received spread message: '%s', group: '%s', sender: '%s'", msg, group, sender);
+    ROS_INFO("Received spread message: '%s', group: '%s', sender: '%s'", msg, group, sender);
     try {
       Sync sync;
       sync.ParseFromString(msg);
@@ -224,12 +223,14 @@ namespace dtron_test_adapter {
         printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
         std::map<std::string, int> mapOfVariables;
         for (unsigned int i = 0; i < sync.variables_size(); ++i) {
+          ROS_INFO_STREAM("Variable " << i << ": " << sync.variables(i).name() << " -> " << sync.variables(i).value());
           mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
         }
         receiveMessage_(sync.name(), mapOfVariables);
       } else {
+        ROS_INFO("No name in message");
         if (sender == NULL) {
-          printf("Received incorrectly formed message: %s\n", msg);
+          ROS_INFO("Received incorrectly formed message: %s\n", msg);
         }
       }
     }
@@ -258,7 +259,6 @@ public:
     robot_name_(robot_name)
     {
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
-      std::cout << "Max group length: " <<  MAX_GROUP_NAME << std::endl;
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
     }
 
