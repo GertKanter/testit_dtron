@@ -295,7 +295,7 @@ public:
     }*/
     usleep(1000000);
     vars["value"] = 1;
-    ROS_INFO(sync_output);
+    ROS_INFO_STREAM("" << sync_output);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
