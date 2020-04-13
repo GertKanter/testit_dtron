@@ -295,7 +295,7 @@ public:
     }*/
     usleep(1000000);
     vars["value"] = 1;
-    testAdapter_->sendMessage(sync_output.c_str(), vars);
+    // testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
 };
