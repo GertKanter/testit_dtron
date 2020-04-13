@@ -87,7 +87,7 @@ int SpreadAdapter::JoinGroup(const char* Name) {
 void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
-    ROS_INFO("Tryna read some message broh");
+    ROS_INFO("Trying to read a message");
     spreadMessage = SpreadAdapter::ReadMessage();
     ROS_INFO("Read message");
     if (spreadMessage.Type != -1) {
@@ -130,7 +130,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
 
   service_type = 0;
   ROS_INFO("Reached receive part");
-  ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
+  ret = SP_receive( *Mbox, &service_type, sender, 1000, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
   ROS_INFO("Passed receive part");
   if(ret < 0) {
     SP_error(ret);
