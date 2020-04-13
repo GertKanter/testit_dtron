@@ -294,6 +294,9 @@ public:
       vars["value"] = -1;
     }*/
     usleep(1000000);
+    if (name.find("response") != std::string::npos) {
+      return;
+    }
     vars["value"] = 1;
     ROS_INFO_STREAM("" << sync_output);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
