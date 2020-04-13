@@ -289,8 +289,9 @@ public:
     } else {
       vars["value"] = -1;
     }*/
-    usleep(1000000);
-    vars["value"] = 0;
+    if (name.find("rs") != std::string::npos) {
+      return;
+    }
     testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
