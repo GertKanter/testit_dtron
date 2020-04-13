@@ -130,7 +130,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
 
   service_type = 0;
   ROS_INFO("Reached receive part");
-  ret = SP_receive( *Mbox, &service_type, sender, 1000, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
+  ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
   ROS_INFO("Passed receive part");
   if(ret < 0) {
     SP_error(ret);
@@ -287,12 +287,13 @@ public:
     std::map<std::string, int> vars;
     testit_dtron_adapter::HandleSpreadMessage srv;
     srv.request.input = spreadMessageToYamlString(name, args);
-    bool call_success = handle_spread_message_client_.call(srv);
+    /*bool call_success = handle_spread_message_client_.call(srv);*
     if (call_success && (bool)srv.response.response) {
       vars["value"] = 1;
     } else {
       vars["value"] = -1;
-    }
+    }*/
+    vars["value"] = 1;
     testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
