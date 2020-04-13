@@ -247,7 +247,7 @@ namespace dtron_test_adapter {
 class Adapter {
 private:
   dtron_test_adapter::TestAdapter* testAdapter_;
-  ros::ServiceClient handle_spread_message_client_;
+  //ros::ServiceClient handle_spread_message_client_;
   ros::NodeHandle nh_;
   std::vector<std::string> sync_input_;
   std::vector<std::string> sync_output_;
@@ -262,7 +262,7 @@ public:
     sync_output_(sync_output),
     robot_name_(robot_name)
     {
-      // handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
+      //handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
     }
 
@@ -286,13 +286,14 @@ public:
     std::string sync_output = sync_output_[index];
     std::map<std::string, int> vars;
     /*testit_dtron_adapter::HandleSpreadMessage srv;*/
-    ROS_INFO_STREAM("Spread message yaml string: " << spreadMessageToYamlString(name, args));
+    ROS_INFO_STREAM("Spread message yaml string" << spreadMessageToYamlString(name, args));
     /*bool call_success = handle_spread_message_client_.call(srv);*
     if (call_success && (bool)srv.response.response) {
       vars["value"] = 1;
     } else {
       vars["value"] = -1;
     }*/
+    usleep(1000000);
     vars["value"] = 1;
     testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
