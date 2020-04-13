@@ -293,8 +293,8 @@ public:
     if (name.find("rs") != std::string::npos) {
       return;
     }
-    vars["value"] = 1;
-    //testAdapter_->sendMessage(sync_output.c_str(), vars);
+    vars["value"] = 0;
+    testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
 };
