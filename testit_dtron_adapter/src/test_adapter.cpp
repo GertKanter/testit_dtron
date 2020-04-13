@@ -129,9 +129,7 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   int16 mess_type;
 
   service_type = 0;
-  ROS_INFO("Reached receive part");
   ret = SP_receive( *Mbox, &service_type, sender, 100, &num_groups, target_groups, &mess_type, &endian_mismatch, sizeof(message), message );
-  ROS_INFO("Passed receive part");
   if(ret < 0) {
     SP_error(ret);
   }
@@ -154,7 +152,6 @@ SpreadMessage SpreadAdapter::ReadMessage() {
   spreadMessage.Group = target_groups[0];
   spreadMessage.Msg = new char[102400];
   spreadMessage.Msg = message;
-  ROS_INFO_STREAM("Received spread message: " << spreadMessage.Type << "; " << spreadMessage.Sender << "; " << spreadMessage.Group << "; " << spreadMessage.Msg);
   return spreadMessage;
 }
 
@@ -227,7 +224,6 @@ namespace dtron_test_adapter {
         printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
         std::map<std::string, int> mapOfVariables;
         for (unsigned int i = 0; i < sync.variables_size(); ++i) {
-          ROS_INFO_STREAM("Variable " << i << ": " << sync.variables(i).name() << " -> " << sync.variables(i).value());
           mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
         }
         receiveMessage_(sync.name(), mapOfVariables);
@@ -286,7 +282,7 @@ public:
     std::string sync_output = sync_output_[index];
     std::map<std::string, int> vars;
     /*testit_dtron_adapter::HandleSpreadMessage srv;*/
-    ROS_INFO_STREAM("Spread message yaml string" << spreadMessageToYamlString(name, args));
+    ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
     /*bool call_success = handle_spread_message_client_.call(srv);*
     if (call_success && (bool)srv.response.response) {
       vars["value"] = 1;
@@ -298,7 +294,6 @@ public:
       return;
     }
     vars["value"] = 1;
-    ROS_INFO_STREAM("" << sync_output);
     //testAdapter_->sendMessage(sync_output.c_str(), vars);
     ROS_INFO("Finished message processing.");
   }
