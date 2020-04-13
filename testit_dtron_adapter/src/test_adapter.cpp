@@ -283,7 +283,7 @@ public:
     std::map<std::string, int> vars;
     testit_dtron_adapter::HandleSpreadMessage srv;
     ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
-    bool call_success = handle_spread_message_client_.call(srv);*
+    bool call_success = handle_spread_message_client_.call(srv);
     if (call_success && (bool)srv.response.response) {
       vars["value"] = 1;
     } else {
