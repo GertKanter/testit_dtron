@@ -214,7 +214,6 @@ namespace dtron_test_adapter {
   }
 
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
-    ROS_INFO("Received spread message: '%s', group: '%s', sender: '%s'", msg, group, sender);
     try {
       Sync sync;
       sync.ParseFromString(msg);
@@ -295,7 +294,7 @@ public:
     }
 
     ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
-    testAdapter_->sendMessage(sync_output.c_str(), vars);
+    // testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };
 
