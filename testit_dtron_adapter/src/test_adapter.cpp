@@ -204,14 +204,12 @@ namespace dtron_test_adapter {
     for (std::map<std::string, int>::const_iterator it = args.begin(); it != args.end(); ++it)
     {
       Variable* var = response.add_variables();
-      ROS_INFO_STREAM("Setting name = " << it->first << "  value = " << it->second << " variables_size = " << response.variables_size());
       response.mutable_variables(i)->set_name(it->first);
       response.mutable_variables(i)->set_value(it->second);
       i++;
     }
     std::string data = "";
     response.SerializeToString(&data);
-    ROS_INFO_STREAM("data size = " << data.size());
     spreadAdapter_.SendMessage(group, data);
   }
 
@@ -276,16 +274,12 @@ public:
   }
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
-    ROS_INFO_STREAM("Received a message with name '" << name << "'");
-
-    std::map<std::string, int> vars;
-
     if (std::find(sync_output_.begin(), sync_output_.end(), name) != sync_output_.end()) {
-      vars["value"] = 0;
-      ROS_INFO_STREAM("Sending response: " << name << "_value=" << vars["value"]);
-      testAdapter_->sendMessage(name.c_str(), vars);
       return;
     }
+
+    ROS_INFO_STREAM("Received a message with name '" << name << "'");
+    std::map<std::string, int> vars;
 
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
     int index = std::distance(sync_input_.begin(), it);
