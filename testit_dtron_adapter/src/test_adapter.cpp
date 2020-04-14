@@ -277,6 +277,14 @@ public:
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
+
+    if (std::find(sync_output_.begin(), sync_output_.end(), name) != sync_output_.end()) {
+      vars["value"] = 0;
+      ROS_INFO_STREAM("Sending response: " << name << "_value=" << vars["value"]);
+      testAdapter_->sendMessage(name.c_str(), vars);
+      return;
+    }
+
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
     int index = std::distance(sync_input_.begin(), it);
     std::string sync_output = sync_output_[index];
@@ -289,8 +297,8 @@ public:
     } else {
       vars["value"] = -1;
     }
+    ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
-    ROS_INFO("Finished message processing.");
   }
 };
 
