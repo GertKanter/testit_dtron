@@ -276,14 +276,11 @@ public:
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
     std::map<std::string, int> vars;
 
-    if (std::find(sync_output_.begin(), sync_output_.end(), name) != sync_output_.end()) {
-      vars["value"] = 0;
-      ROS_INFO_STREAM("Sending response: " << name << "_value=" << vars["value"]);
-      testAdapter_->sendMessage(name.c_str(), vars);
-      return;
-    }
+    if (std::find(sync_output_.begin(), sync_output_.end(), name) != sync_output_.end()) return;
 
     std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
+    if (it == sync_input_.end()) return;
+
     int index = std::distance(sync_input_.begin(), it);
     std::string sync_output = sync_output_[index];
 
@@ -291,9 +288,9 @@ public:
     ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
     bool call_success = handle_spread_message_client_.call(srv);
     if (call_success && (bool)srv.response.response) {
-      vars["value"] = 0;
+      vars["value"] = 1;
     } else {
-      vars["value"] = 0;
+      vars["value"] = -1;
     }
 
     ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
