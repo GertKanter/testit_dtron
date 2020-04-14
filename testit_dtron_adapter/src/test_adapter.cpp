@@ -288,12 +288,12 @@ public:
     ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
     bool call_success = handle_spread_message_client_.call(srv);
     if (call_success && (bool)srv.response.response) {
-      //vars["value"] = 0;
+      vars["value"] = 0;
     } else {
-      //vars["value"] = 0;
+      vars["value"] = 0;
     }
 
-    //ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
+    ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };
