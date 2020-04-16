@@ -216,11 +216,12 @@ namespace dtron_test_adapter {
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
     try {
       Sync sync;
+      ROS_INFO_STREAM("Raw message: " << msg);
       sync.ParseFromString(msg);
       if ((sync.name() != "") && sender != NULL) {
         printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
         std::map<std::string, int> mapOfVariables;
-        for (unsigned int i = 0; i < sync.variables_size() + 1; ++i) {
+        for (unsigned int i = 0; i < sync.variables_size(); ++i) {
           mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
         }
         receiveMessage_(sync.name(), mapOfVariables);
