@@ -115,6 +115,8 @@ def send_messages(variables):
 
 
 def handle_spread_message(msg):
+    print("Request:")
+    print(msg.input)
     args = yaml.load(msg.input)
     message_name = args.get("name", None)
 
@@ -129,6 +131,8 @@ def handle_spread_message(msg):
 
         param = args[key]
         variable = rospy.get_param("/commands/i_{}/{}={}".format(message_name, key, param))
+        print("Variable:")
+        print(variable)
         variables.append(variable)
 
     return HandleSpreadMessageResponse(send_messages(variables))
@@ -136,6 +140,7 @@ def handle_spread_message(msg):
 
 def handle_spread_message_server():
     rospy.init_node("handle_spread_message", anonymous=True)
+    print("Starting spread message handler")
     service = rospy.Service('/testit/dtron_adapter/handle_spread_message', HandleSpreadMessage, handle_spread_message)
     rospy.spin()
 
