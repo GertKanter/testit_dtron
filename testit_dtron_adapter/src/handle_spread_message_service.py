@@ -115,7 +115,7 @@ def send_messages(variables):
 
 
 def handle_spread_message(msg):
-    args = yaml.load(msg)
+    args = yaml.load(msg.input)
     message_name = args.get("name", None)
 
     if message_name is None:
