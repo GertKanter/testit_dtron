@@ -286,12 +286,13 @@ public:
 
     testit_dtron_adapter::HandleSpreadMessage srv;
     ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
-    bool call_success = handle_spread_message_client_.call(srv);
-    if (call_success && (bool)srv.response.response) {
+    //bool call_success = handle_spread_message_client_.call(srv);
+    /*if (call_success && (bool)srv.response.response) {
       vars["value"] = 1;
     } else {
       vars["value"] = -1;
-    }
+    }*/
+    vars["value"] = -1
 
     ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
