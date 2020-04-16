@@ -50,12 +50,16 @@ def get_topic_sender_responder(identifier, id_type, feedback):
 
     def send(msg):
         publishers[identifier] = publishers.get(identifier, rospy.Publisher(identifier, id_type, queue_size=1))
+        print("Publishing message:")
+        print(msg)
         publishers[identifier].publish(msg)
 
     def get_response():
         feedback_topic = feedback.get('topic')
         msg = rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type')))
         result = get_attribute(msg, feedback.get('field', ''))
+        print("Result:")
+        print(result)
         return success(result, feedback)
 
     return send, get_response
@@ -108,8 +112,12 @@ def send_messages(variables):
     response = True
     for identifier in senders_by_id:
         msg = compose_message(fields_by_topic[identifier])
+        print("Going to send msg:")
+        print(msg)
         senders_by_id[identifier](msg)
         response = response and receivers_by_id[identifier]()
+        print("Got response:")
+        print(response)
 
     return response
 
