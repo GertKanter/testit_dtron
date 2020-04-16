@@ -16,7 +16,7 @@
   <group if="$(eval arg('model_configuration') != '')">
     <rosparam command="load" file="$(arg model_configuration)"/>
   </group>
-  <node name="handle_spread_message" pkg="testit_dtron_adapter" type="handle_spread_message_service.py" output="screen"/>
+  <node name="handle_spread_message" pkg="testit_dtron_adapter" type="handle_spread_message_service.py"/>
 
   <include file="$(arg adapter_launch_file)"/>
 </launch>
