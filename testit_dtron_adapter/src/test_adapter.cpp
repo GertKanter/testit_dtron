@@ -303,7 +303,7 @@ public:
   }
 };
 
-std::vector<std::string> add_to_vect_from_param(ros::NodeHandle &nh, std::vector<const char*> &to, const char* from) {
+std::vector<std::string> add_to_vect_from_param(ros::NodeHandle &nh, std::vector<const char*> &to, std::string from) {
   std::vector<std::string> input;
   nh.getParam(from, input);
   for (std::vector<std::string>::const_iterator it = input.begin(); it != input.end(); ++it)
