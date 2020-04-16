@@ -268,10 +268,12 @@ public:
 
   std::string spreadMessageToYamlString(std::string name, std::map<std::string, int> args) {
     std::string paramString = "name: " + name;
-    for (auto &value : args) {
+    auto it = args.begin();
+    while (it != args.end()) {
       paramString += "\n";
-      ROS_INFO_STREAM("Param: " << value.first << " : " << std::to_string(value.second));
-      paramString += value.first + ": " + std::to_string(value.second);
+      ROS_INFO_STREAM("Param: " << it->first << " : " << std::to_string(it->second));
+      paramString += it->first + ": " + std::to_string(it->second);
+      it++;
     }
     return paramString;
   }
