@@ -128,7 +128,7 @@ def handle_spread_message(msg):
             continue
 
         param = args[key]
-        variable = rospy.get_param("i_{}/{}={}".format(message_name, key, param))
+        variable = rospy.get_param("/commands/i_{}/{}={}".format(message_name, key, param))
         variables.append(variable)
 
     return HandleSpreadMessageResponse(send_messages(variables))
