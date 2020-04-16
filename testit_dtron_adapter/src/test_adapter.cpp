@@ -296,7 +296,8 @@ public:
     //vars["value"] = -1;
 
     //ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
-    //testAdapter_->sendMessage(sync_output.c_str(), vars);
+    sync_output = "r0mbsg_rs_fail";
+    testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };
 
