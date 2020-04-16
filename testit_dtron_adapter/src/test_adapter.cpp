@@ -270,6 +270,7 @@ public:
     std::string paramString = "name: " + name;
     for (const auto &value : args) {
       paramString += "\n";
+      ROS_INFO_STREAM("Param: " << value.first << " : " << std::to_string(value.second));
       paramString += value.first + ": " + std::to_string(value.second);
     }
     return paramString;
