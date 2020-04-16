@@ -290,6 +290,7 @@ public:
     srv.request.input = message;
     ROS_INFO_STREAM("Spread message yaml string \n" << message);
     std::string sync_output;
+    handle_spread_message_client_.waitForExistence();
     bool call_success = handle_spread_message_client_.call(srv);
     if (call_success && (bool)srv.response.response) {
       sync_output = success_outputs_[index];
