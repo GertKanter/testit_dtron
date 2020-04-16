@@ -242,17 +242,20 @@ private:
   dtron_test_adapter::TestAdapter* testAdapter_;
   ros::ServiceClient handle_spread_message_client_;
   ros::NodeHandle nh_;
-  std::vector<std::string> sync_input_;
-  std::vector<std::string> sync_output_;
+  std::vector<std::string> sync_inputs_;
+  std::vector<std::string> success_outputs_;
+  std::vector<std::string> failure_outputs_;
   std::string robot_name_;
 public:
   Adapter(ros::NodeHandle nh,
-      std::vector<std::string> sync_input,
-      std::vector<std::string> sync_output,
+      std::vector<std::string> sync_inputs,
+      std::vector<std::string> success_outputs,
+      std::vector<std::string> failure_outputs,
       std::string robot_name) :
     nh_(nh),
-    sync_input_(sync_input),
-    sync_output_(sync_output),
+    sync_inputs_(sync_inputs),
+    success_outputs_(success_outputs),
+    failure_outputs_(failure_outputs),
     robot_name_(robot_name)
     {
       handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
@@ -274,32 +277,41 @@ public:
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
-    std::map<std::string, int> vars;
 
-    if (std::find(sync_output_.begin(), sync_output_.end(), name) != sync_output_.end()) return;
+    if (std::find(success_outputs_.begin(), success_outputs_.end(), name) != success_outputs_.end()) return;
+    if (std::find(failure_outputs_.begin(), failure_outputs_.end(), name) != failure_outputs_.end()) return;
 
-    std::vector<std::string>::iterator it = std::find(sync_input_.begin(), sync_input_.end(), name);
-    if (it == sync_input_.end()) return;
-
-    int index = std::distance(sync_input_.begin(), it);
-    std::string sync_output = sync_output_[index];
+    std::vector<std::string>::iterator it = std::find(sync_inputs_.begin(), sync_inputs_.end(), name);
+    if (it == sync_inputs_.end()) return;
+    int index = std::distance(sync_inputs_.begin(), it);
 
     testit_dtron_adapter::HandleSpreadMessage srv;
-    ROS_INFO_STREAM("Spread message yaml string \n" << spreadMessageToYamlString(name, args));
-    //bool call_success = handle_spread_message_client_.call(srv);
-    /*if (call_success && (bool)srv.response.response) {
-      vars["value"] = 1;
+    std::string message = spreadMessageToYamlString(name, args);
+    srv.request.input = message;
+    ROS_INFO_STREAM("Spread message yaml string \n" << message);
+    std::string sync_output;
+    bool call_success = handle_spread_message_client_.call(srv);
+    if (call_success && (bool)srv.response.response) {
+      sync_output = success_outputs_[index];
     } else {
-      vars["value"] = -1;
-    }*/
-    usleep(3000000);
-    //vars["value"] = -1;
+      sync_output = failure_outputs_[index];
+    }
 
-    //ROS_INFO_STREAM("Sending response: " << sync_output << "_value=" << vars["value"]);
-    sync_output = "r0mbsg_rs_fail";
+    std::map<std::string, int> vars;
+    ROS_INFO_STREAM("Sending response: " << sync_output);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };
+
+std::vector<std::string> add_to_vect_from_param(ros::NodeHandle &nh, std::vector<const char*> &to, const char* from) {
+  std::vector<std::string> input;
+  nh.getParam(from, input);
+  for (std::vector<std::string>::const_iterator it = input.begin(); it != input.end(); ++it)
+  {
+    to.push_back(it->c_str());
+  }
+  return input;
+}
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "test_adapter");
@@ -313,18 +325,10 @@ int main(int argc, char** argv) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   std::vector<const char*> groups;
-  std::vector<std::string> sync_input;
-  nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/input", sync_input);
-  for (std::vector<std::string>::const_iterator it = sync_input.begin(); it != sync_input.end(); ++it)
-  {
-    groups.push_back(it->c_str());
-  }
-  std::vector<std::string> sync_output;
-  nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/output", sync_output);
-  for (std::vector<std::string>::const_iterator it = sync_output.begin(); it != sync_output.end(); ++it)
-  {
-    groups.push_back(it->c_str());
-  }
+  auto sync_inputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/input");
+  auto success_outputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/output/success");
+  auto failure_outputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/output/failure");
+
   std::string ip;
   std::string port;
   std::string username;
@@ -336,7 +340,8 @@ int main(int argc, char** argv) {
     ROS_ERROR("Spread parameters not configured, unable to launch adapter!");
     return 1;
   }
-  Adapter adapter(nh, sync_input, sync_output, robot_name);
+
+  Adapter adapter(nh, sync_inputs, success_outputs, failure_outputs, robot_name);
   dtron_test_adapter::TestAdapter testAdapter(nh,  (port + "@" + ip).c_str(), username.c_str(), groups, boost::bind(&Adapter::receiveMessage, &adapter, _1, _2));
   adapter.setTestAdapter(testAdapter);
   ROS_INFO("Test adapter running...");
