@@ -306,7 +306,6 @@ public:
 
     std::map<std::string, int> vars;
     ROS_INFO_STREAM("Sending response: " << sync_output);
-    usleep(3000000);
     testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };

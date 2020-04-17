@@ -57,13 +57,11 @@ def get_topic_sender_responder(identifier, id_type, feedback):
     def get_response():
         feedback_topic = feedback.get('topic')
         print("Waiting for message for feedback topic: " + feedback_topic)
-        # msg = rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type')))
-        # result = get_attribute(msg, feedback.get('field', ''))
-        # print("Result:")
-        # print(result)
-        # return success(result, feedback)
-        rospy.sleep(1)
-        return True
+        msg = rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type')))
+        result = get_attribute(msg, feedback.get('field', ''))
+        print("Result:")
+        print(result)
+        return success(result, feedback)
 
     return send, get_response
 
