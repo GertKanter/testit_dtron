@@ -55,6 +55,9 @@ class Reference:
     def get(self):
         return self.value
 
+    def remove(self):
+        self.value = None
+
 
 def get_topic_sender_responder(identifier, id_type, feedback):
     publishers = {}
@@ -74,7 +77,7 @@ def get_topic_sender_responder(identifier, id_type, feedback):
         while response.get() is None:
             rospy.sleep(0.1)
         result = get_attribute(response.get(), feedback.get('field', ''))
-        response.set(None)
+        response.remove()
         print("Result:")
         print(result)
         return success(result, feedback)
