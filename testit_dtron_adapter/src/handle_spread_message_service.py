@@ -45,25 +45,39 @@ def success(result, feedback):
         str(result)) is not None
 
 
+class Reference:
+    def __init__(self):
+        self.value = None
+
+    def set(self, value):
+        self.value = value
+
+    def get(self):
+        return self.value
+
+
 def get_topic_sender_responder(identifier, id_type, feedback):
     publishers = {}
+    response = Reference()
 
     def send(msg):
-        publishers[identifier] = publishers.get(identifier, rospy.Publisher(identifier, id_type, queue_size=1))
+        if identifier not in publishers:
+            publishers[identifier] = rospy.Publisher(identifier, id_type, queue_size=1)
+            rospy.sleep(1)
         print("Publishing message to topic " + identifier + " :")
         print(msg)
         publishers[identifier].publish(msg)
+        feedback_topic = feedback.get('topic')
+        response.set(rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type'))))
 
     def get_response():
-        feedback_topic = feedback.get('topic')
-        print("Waiting for message for feedback topic: " + feedback_topic)
-        # msg = rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type')))
-        # result = get_attribute(msg, feedback.get('field', ''))
-        # print("Result:")
-        # print(result)
-        # return success(result, feedback)
-        rospy.sleep(2)
-        return True
+        while response.get() is None:
+            rospy.sleep(0.1)
+        result = get_attribute(response.get(), feedback.get('field', ''))
+        response.set(None)
+        print("Result:")
+        print(result)
+        return success(result, feedback)
 
     return send, get_response
 
