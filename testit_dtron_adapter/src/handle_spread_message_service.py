@@ -67,8 +67,8 @@ def get_topic_sender_responder(identifier, id_type, feedback):
         if identifier not in publishers:
             publishers[identifier] = rospy.Publisher(identifier, id_type, queue_size=1)
             rospy.sleep(1)
-        print("Publishing message to topic " + identifier + " :")
-        print(msg)
+        rospy.loginfo("Publishing message to topic " + identifier + " :")
+        rospy.loginfo(str(msg))
         publishers[identifier].publish(msg)
         feedback_topic = feedback.get('topic')
         response.set(rospy.wait_for_message(feedback_topic, dynamic_import(feedback.get('type'))))
@@ -78,8 +78,8 @@ def get_topic_sender_responder(identifier, id_type, feedback):
             rospy.sleep(0.1)
         result = get_attribute(response.get(), feedback.get('field', ''))
         response.remove()
-        print("Result:")
-        print(result)
+        rospy.loginfo("Result:")
+        rospy.loginfo(result)
         return success(result, feedback)
 
     return send, get_response
@@ -139,8 +139,8 @@ def send_messages(variables):
 
 
 def handle_spread_message(msg):
-    print("Request:")
-    print(msg.input)
+    rospy.loginfo("Request:")
+    rospy.loginfo(msg.input)
     args = yaml.load(msg.input)
     message_name = args.get("name", None)
 
@@ -166,7 +166,7 @@ def handle_spread_message(msg):
 
 def handle_spread_message_server():
     rospy.init_node("handle_spread_message", anonymous=True)
-    print("Starting spread message handler")
+    rospy.loginfo("Starting spread message handler")
     _ = rospy.Service('/testit/dtron_adapter/handle_spread_message', HandleSpreadMessage, handle_spread_message)
     rospy.spin()
 
