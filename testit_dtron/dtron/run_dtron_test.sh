@@ -11,9 +11,9 @@ if [ ! -d "$TRON_HOME" ]; then
   exit 127
 fi
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: run_dtron_test.sh uppaal_model_xml_path"
+if [ "$#" -ne 2 ]; then
+    echo "Usage: run_dtron_test.sh uppaal_model_xml_path time_unit_in_usec"
     exit
 fi
 
-java -jar $(rospack find testit_dtron)/dtron/dtron-4.14.jar -f $1 -u 1000000 -o 400000 -P eager
+java -jar $(rospack find testit_dtron)/dtron/dtron-4.14.jar -f $1 -u $2 -o 400000 -P eager
