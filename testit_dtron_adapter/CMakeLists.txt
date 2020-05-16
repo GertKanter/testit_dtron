@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(testit_dtron_adapter)
 
 option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" ON)
+option(BUILD_MESSAGES_ONLY "Build messages only" OFF)
 
 if (BUILD_TESTIT_DTRON_PACKAGE)
   find_package(catkin REQUIRED COMPONENTS
@@ -47,28 +48,31 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
    ${Spread_INCLUDE_DIRS}
   )
 
-  add_library(xtaproto_lib
-    src/xtaproto.pb.cc
-  )
+  if (NOT BUILD_MESSAGES_ONLY)
+    add_library(xtaproto_lib
+      src/xtaproto.pb.cc
+    )
 
-  add_executable(test_adapter src/test_adapter.cpp)
+    add_executable(test_adapter src/test_adapter.cpp)
 
-  find_library(protobuf protobuf PATHS ${PROJECT_SOURCE_DIR}/protobuf/lib NO_CMAKE_SYSTEM_PATH)
-  get_filename_component(protobuf_REALPATH ${protobuf} REALPATH)
 
-  find_library(spread spread PATHS ${PROJECT_SOUCE_DIR}/spread/lib NO_CMAKE_SYSTEM_PATH)
-  get_filename_component(spread_REALPATH ${spread} REALPATH)
+    find_library(protobuf protobuf PATHS ${PROJECT_SOURCE_DIR}/protobuf/lib NO_CMAKE_SYSTEM_PATH)
+    get_filename_component(protobuf_REALPATH ${protobuf} REALPATH)
 
-  find_library(topological_navigation topological_navigation PATHS /catkin_ws/devel/lib NO_CMAKE_SYSTEM_PATH)
-  get_filename_component(topological_navigation_REALPATH ${topological_navigation} REALPATH)
+    find_library(spread spread PATHS ${PROJECT_SOUCE_DIR}/spread/lib NO_CMAKE_SYSTEM_PATH)
+    get_filename_component(spread_REALPATH ${spread} REALPATH)
 
-  target_link_libraries(test_adapter
-     ${catkin_LIBRARIES}
-     ${spread_REALPATH}
-     ${protobuf_REALPATH}
-     xtaproto_lib
-     pthread
-   )
+    find_library(topological_navigation topological_navigation PATHS /catkin_ws/devel/lib NO_CMAKE_SYSTEM_PATH)
+    get_filename_component(topological_navigation_REALPATH ${topological_navigation} REALPATH)
+
+    target_link_libraries(test_adapter
+       ${catkin_LIBRARIES}
+       ${spread_REALPATH}
+       ${protobuf_REALPATH}
+       xtaproto_lib
+       pthread
+     )
+  endif ()
 
 
   #############
