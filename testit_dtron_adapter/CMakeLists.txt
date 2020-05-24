@@ -3,68 +3,70 @@ project(testit_dtron_adapter)
 
 option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" ON)
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  genmsg
-  tf
-  move_base_msgs
-  actionlib
-  testit_msgs
-  message_generation
-)
+if (BUILD_TESTIT_DTRON_PACKAGE)
+  find_package(catkin REQUIRED COMPONENTS
+    roscpp
+    rospy
+    std_msgs
+    genmsg
+    tf
+    move_base_msgs
+    actionlib
+    testit_msgs
+    message_generation
+  )
 
-SET(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CATKIN_PACKAGE_LIB_DESTINATION})
-SET(Spread_INCLUDE_DIRS "/catkin_ws/spread/include")
-SET(PROTOBUF_INCLUDE_DIRS "/catkin_ws/protobuf/include")
-SET(topological_navigation_INCLUDE_DIRS "/catkin_ws/devel/include")
+  SET(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CATKIN_PACKAGE_LIB_DESTINATION})
+  SET(Spread_INCLUDE_DIRS "/catkin_ws/spread/include")
+  SET(PROTOBUF_INCLUDE_DIRS "/catkin_ws/protobuf/include")
+  SET(topological_navigation_INCLUDE_DIRS "/catkin_ws/devel/include")
 
-catkin_python_setup()
+  catkin_python_setup()
 
-add_service_files(
-  FILES
-  HandleSpreadMessage.srv
-)
+  add_service_files(
+    FILES
+    HandleSpreadMessage.srv
+  )
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+  generate_messages(
+    DEPENDENCIES
+    std_msgs
+  )
 
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime
-  DEPENDS Spread
-)
+  catkin_package(
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS message_runtime
+    DEPENDS Spread
+  )
 
-include_directories(
-${topological_navigation_INCLUDE_DIRS}
-include
- ${catkin_INCLUDE_DIRS}
- ${PROTOBUF_INCLUDE_DIRS}
- ${Spread_INCLUDE_DIRS}
-)
+  include_directories(
+  ${topological_navigation_INCLUDE_DIRS}
+  include
+   ${catkin_INCLUDE_DIRS}
+   ${PROTOBUF_INCLUDE_DIRS}
+   ${Spread_INCLUDE_DIRS}
+  )
 
-add_library(xtaproto_lib
-  src/xtaproto.pb.cc
-)
+  add_library(xtaproto_lib
+    src/xtaproto.pb.cc
+  )
 
-add_executable(test_adapter src/test_adapter.cpp)
+  add_executable(test_adapter src/test_adapter.cpp)
 
-find_library(protobuf protobuf PATHS ${PROJECT_SOURCE_DIR}/protobuf/lib NO_CMAKE_SYSTEM_PATH)
-get_filename_component(protobuf_REALPATH ${protobuf} REALPATH)
+  find_library(protobuf protobuf PATHS ${PROJECT_SOURCE_DIR}/protobuf/lib NO_CMAKE_SYSTEM_PATH)
+  get_filename_component(protobuf_REALPATH ${protobuf} REALPATH)
 
-find_library(spread spread PATHS ${PROJECT_SOUCE_DIR}/spread/lib NO_CMAKE_SYSTEM_PATH)
-get_filename_component(spread_REALPATH ${spread} REALPATH)
+  find_library(spread spread PATHS ${PROJECT_SOUCE_DIR}/spread/lib NO_CMAKE_SYSTEM_PATH)
+  get_filename_component(spread_REALPATH ${spread} REALPATH)
 
-find_library(topological_navigation topological_navigation PATHS /catkin_ws/devel/lib NO_CMAKE_SYSTEM_PATH)
-get_filename_component(topological_navigation_REALPATH ${topological_navigation} REALPATH)
+  find_library(topological_navigation topological_navigation PATHS /catkin_ws/devel/lib NO_CMAKE_SYSTEM_PATH)
+  get_filename_component(topological_navigation_REALPATH ${topological_navigation} REALPATH)
 
-target_link_libraries(test_adapter
-   ${catkin_LIBRARIES}
-   ${spread_REALPATH}
-   ${protobuf_REALPATH}
-   xtaproto_lib
-   pthread
- )
+  target_link_libraries(test_adapter
+     ${catkin_LIBRARIES}
+     ${spread_REALPATH}
+     ${protobuf_REALPATH}
+     xtaproto_lib
+     pthread
+  )
+endif (BUILD_TESTIT_DTRON_PACKAGE)
