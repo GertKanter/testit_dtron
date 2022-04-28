@@ -1,18 +1,19 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(testit_dtron_adapter)
 
-option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" OFF)
+option(BUILD_TESTIT_DTRON_PACKAGE "Build this package (only set to true when building in TestIt docker container)" ON)
 
 if (BUILD_TESTIT_DTRON_PACKAGE)
   find_package(catkin REQUIRED COMPONENTS
-          roscpp
-          rospy
-          std_msgs
-          genmsg
-          tf
-          move_base_msgs
-          actionlib
-          testit_msgs
+    roscpp
+    rospy
+    std_msgs
+    genmsg
+    tf
+    move_base_msgs
+    actionlib
+    testit_msgs
+    message_generation
   )
 
   SET(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CATKIN_PACKAGE_LIB_DESTINATION})
@@ -20,9 +21,21 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
   SET(PROTOBUF_INCLUDE_DIRS "/catkin_ws/protobuf/include")
   SET(topological_navigation_INCLUDE_DIRS "/catkin_ws/devel/include")
 
+  catkin_python_setup()
+
+  add_service_files(
+    FILES
+    HandleSpreadMessage.srv
+  )
+
+  generate_messages(
+    DEPENDENCIES
+    std_msgs
+  )
+
   catkin_package(
     INCLUDE_DIRS include
-    #CATKIN_DEPENDS other_catkin_pkg
+    CATKIN_DEPENDS message_runtime
     DEPENDS Spread
   )
 
@@ -55,19 +68,5 @@ if (BUILD_TESTIT_DTRON_PACKAGE)
      ${protobuf_REALPATH}
      xtaproto_lib
      pthread
-   )
-
-
-  #############
-  ## Testing ##
-  #############
-
-  ## Add gtest based cpp test target and link libraries
-  # catkin_add_gtest(${PROJECT_NAME}-test test/test_spread_test.cpp)
-  # if(TARGET ${PROJECT_NAME}-test)
-  #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-  # endif()
-
-  ## Add folders to be run by python nosetests
-  # catkin_add_nosetests(test)
+  )
 endif (BUILD_TESTIT_DTRON_PACKAGE)

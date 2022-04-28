@@ -16,14 +16,10 @@
 #include <fstream>
 #include <sys/stat.h>
 #include <cstdlib>
+#include <unistd.h>
 
-#include <move_base_msgs/MoveBaseAction.h>
-#include <topological_navigation/GotoNodeAction.h>
-#include <actionlib/client/simple_action_client.h>
 #include <std_msgs/Bool.h>
-
-#include <testit_msgs/Coverage.h>
-
+#include "testit_dtron_adapter/HandleSpreadMessage.h"
 
 struct SpreadMessage {
   int Type;
@@ -46,6 +42,8 @@ private:
   boost::function<void (int, char*, char*, char*)> callback;
   bool connectionActive;
   mailbox* Mbox;
+  const char* spreadName;
+  const char* userName;
   char* User;
   char* Spread;
   char* PrivateGroup;
@@ -54,10 +52,12 @@ private:
 
 SpreadAdapter::SpreadAdapter(const char* SpreadName, const char* UserName, boost::function<void (int, char*, char*, char*)> callbackFunction) {
   int ret;
+  spreadName = SpreadName;
+  userName = UserName;
   Mbox = new mailbox;
   PrivateGroup = new char[80];
   callback = callbackFunction;
-  ret = SP_connect(SpreadName, UserName, 0, 1, Mbox, PrivateGroup);
+  ret = SP_connect(spreadName, userName, 0, 1, Mbox, PrivateGroup);
   if(ret < 0) {
     SP_error(ret);
     connectionActive = false;
@@ -75,7 +75,6 @@ mailbox* SpreadAdapter::Mailbox() {
 }
 
 SpreadAdapter::SpreadAdapter(mailbox* spreadMailBox) {
-  Mbox = new mailbox;
   Mbox = spreadMailBox;
   connectionActive = true;
 }
@@ -88,8 +87,10 @@ int SpreadAdapter::JoinGroup(const char* Name) {
 void SpreadAdapter::ReaderThread() {
   SpreadMessage spreadMessage;
   do {
+    ROS_INFO("Trying to read a message");
     spreadMessage = SpreadAdapter::ReadMessage();
-    if(spreadMessage.Type != -1) { 
+    ROS_INFO("Read message");
+    if (spreadMessage.Type != -1) {
       callback(spreadMessage.Type, spreadMessage.Sender, spreadMessage.Group, spreadMessage.Msg);
     }
   } while (spreadMessage.Type != -1);
@@ -188,6 +189,7 @@ namespace dtron_test_adapter {
         ROS_INFO("Successfully connected to Spread server!");
         for (unsigned int i = 0; i < groups.size(); ++i) {
           spreadAdapter_.JoinGroup(groups[i]);
+          ROS_INFO_STREAM("Joined group: " << groups[i]);
         }
         boost::thread spreadMessageReader(&SpreadAdapter::ReaderThread, &spreadAdapter_);
       } else {
@@ -202,320 +204,121 @@ namespace dtron_test_adapter {
     for (std::map<std::string, int>::const_iterator it = args.begin(); it != args.end(); ++it)
     {
       Variable* var = response.add_variables();
-      ROS_INFO_STREAM("Setting name = " << it->first << "  value = " << it->second << " variables_size = " << response.variables_size());
       response.mutable_variables(i)->set_name(it->first);
       response.mutable_variables(i)->set_value(it->second);
       i++;
     }
     std::string data = "";
     response.SerializeToString(&data);
-    ROS_INFO_STREAM("data size = " << data.size());
     spreadAdapter_.SendMessage(group, data);
   }
 
   void TestAdapter::spreadMessageCallback(int type, char* sender, char* group, char* msg) {
-    Sync sync;
-    sync.ParseFromString(msg);
-    if ((sync.name() != "") && sender != NULL) {
-      printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
-      std::map<std::string, int> mapOfVariables;
-      for (unsigned int i = 0; i < sync.variables_size(); ++i) {
-        mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
-      }
-      receiveMessage_(sync.name(), mapOfVariables);
-    } else {
-      if (sender == NULL) {
-        printf("Received incorrectly formed message: %s\n", msg);
+    try {
+      Sync sync;
+      ROS_INFO_STREAM("Raw message: " << msg);
+      sync.ParseFromString(msg);
+      if ((sync.name() != "") && sender != NULL) {
+        printf("[Google protocol buffers]: Channel: '%s', Sender: '%s'\n", sync.name().c_str(), sender);
+        std::map<std::string, int> mapOfVariables;
+        for (unsigned int i = 0; i < sync.variables_size(); ++i) {
+          mapOfVariables.insert(std::pair<std::string, int>(sync.variables(i).name(), sync.variables(i).value()));
+        }
+        receiveMessage_(sync.name(), mapOfVariables);
+      } else {
+        ROS_INFO("No name in message");
+        if (sender == NULL) {
+          ROS_INFO("Received incorrectly formed message: %s\n", msg);
+        }
       }
     }
+    catch (...) {
+      ROS_INFO("Something went wrong receiving message from spread");
+    };
   }
 }
 
 class Adapter {
 private:
   dtron_test_adapter::TestAdapter* testAdapter_;
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac_movebase_;
-  actionlib::SimpleActionClient<topological_navigation::GotoNodeAction> ac_topological_;
-  std::map<std::string, std::string> node_map_;
+  ros::ServiceClient handle_spread_message_client_;
   ros::NodeHandle nh_;
-  std::vector<std::string> sync_input_;
-  std::string sync_output_;
+  std::vector<std::string> sync_inputs_;
+  std::vector<std::string> success_outputs_;
+  std::vector<std::string> failure_outputs_;
   std::string robot_name_;
-  std::string object_detector_topic_;
-  ros::Subscriber object_detector_sub_;
-  bool coverage_enabled_;
-  std::string coverage_format_;
-  std::string coverage_output_;
-  std::string proxy_suffix_;
-  double coverage_trace_start_timestamp_;
-  bool object_detected_;
-  ros::ServiceClient sut_coverage_client_;
 public:
   Adapter(ros::NodeHandle nh,
-      std::string goal_topic,
-      std::vector<std::string> sync_input,
-      std::string sync_output,
-      std::string waypoint_goal_topic,
-      std::string robot_name,
-      std::string object_detector_topic,
-      bool coverage_enabled,
-      std::string coverage_format,
-      std::string coverage_output,
-      std::string proxy_suffix) :
-    ac_movebase_(goal_topic + proxy_suffix, true),
-    ac_topological_(waypoint_goal_topic + proxy_suffix, true),
+      std::vector<std::string> sync_inputs,
+      std::vector<std::string> success_outputs,
+      std::vector<std::string> failure_outputs,
+      std::string robot_name) :
     nh_(nh),
-    sync_input_(sync_input),
-    sync_output_(sync_output),
-    robot_name_(robot_name),
-    object_detector_topic_(object_detector_topic),
-    object_detected_(false),
-    coverage_enabled_(coverage_enabled),
-    coverage_format_(coverage_format),
-    coverage_output_(coverage_output),
-    proxy_suffix_(proxy_suffix),
-    coverage_trace_start_timestamp_(ros::WallTime::now().toSec())
+    sync_inputs_(sync_inputs),
+    success_outputs_(success_outputs),
+    failure_outputs_(failure_outputs),
+    robot_name_(robot_name)
     {
-      sut_coverage_client_ = nh_.serviceClient<testit_msgs::Coverage>("/testit/flush_coverage");
+      handle_spread_message_client_ = nh_.serviceClient<testit_dtron_adapter::HandleSpreadMessage>("/testit/dtron_adapter/handle_spread_message");
       ROS_INFO("ROBOT NAME IN ADAPTER %s", robot_name_.c_str());
-      nh.getParam("/test_adapter/node_map", node_map_);
-      ROS_WARN("Loaded node map with %lu nodes!", node_map_.size());
-      //if (navigation_mode_ != "waypoint") {
-        //ROS_INFO("Connecting to move_base action server @ %s", goal_topic.c_str());
-        /*ac_movebase_.waitForServer(ros::Duration(1.0));
-        if (!ac_movebase_.isServerConnected()) {
-          ROS_ERROR("Unable to connect to move_base action server!");
-        }*/
-      //} else {
-        //ROS_INFO("Connecting to topological_navigation action server @ %s", waypoint_goal_topic.c_str());
-        /*ac_topological_.waitForServer(ros::Duration(4.0));
-        if (!ac_topological_.isServerConnected()) {
-          ROS_ERROR("Unable to connect to topological_navigation action server!");
-        }*/
-      //}
-      // Subscribe to topics
-      if (object_detector_topic_ != "")
-        object_detector_sub_ = nh_.subscribe(object_detector_topic_, 10, &Adapter::objectDetectorCallback, this);
-      ROS_INFO("Adapter is ready for use!");
     }
-
-  void objectDetectorCallback(const std_msgs::Bool::ConstPtr& msg) {
-    if (msg->data)
-      object_detected_ = true;
-    else
-      object_detected_ = false;
-  }
 
   void setTestAdapter(dtron_test_adapter::TestAdapter testAdapter) {
     testAdapter_ = &testAdapter;
   }
 
-  bool flushCoverage(std::string name, std::map<std::string, int> args, std::string event) {
-    if ((name.find("goto") != std::string::npos) ||
-        (name.find("moveto") != std::string::npos) ||
-        (name.find("object_detect") != std::string::npos)
-       )
-    {
-      if (!coverage_enabled_)
-        return true;
-      ROS_DEBUG_STREAM("Flushing coverage information");
-      // Open coverage results file
-      std::ofstream coverage_file;
-      std::string fullname(coverage_output_ + "testit_coverage.log");
-      coverage_file.open (fullname.c_str(), std::ios::app);
-      if (coverage_file.fail()) {
-        ROS_ERROR_STREAM("Unable to open coverage file for writing (" << fullname << ")");
-        return false;
-      }
-      testit_msgs::Coverage coverage_results;
-      if (sut_coverage_client_.call(coverage_results))
-      {
-        ROS_DEBUG("Flush call success");
-        if (coverage_format_ == "yaml" || coverage_format_ == "")
-        {
-	  double timestamp = (ros::Time::now()).toSec();
-	  for (int i = 0; i < coverage_results.response.coverage.size(); ++i) {
-	    ROS_INFO_STREAM("FILE " << coverage_results.response.coverage[i].filename << "  TOTAL LINES " << coverage_results.response.coverage[i].lines.size());
-	    coverage_file << "- traceStartTimestamp: " << std::setprecision(18) << coverage_trace_start_timestamp_ << "\n"
-                          << "  timestamp: " << timestamp << "\n"
-	                  << "  event: " << event << "\n"
-                          << "  name: " << name << "\n"
-			  << "  state: [";
-	    std::map<std::string, int>::iterator it;
-	    bool add_separator = false;
-	    for (it = args.begin(); it != args.end(); it++) {
-              if (add_separator)
-	        coverage_file << ", ";
-	      coverage_file << "'" << it->first << "': " << it->second;
-	      add_separator = true;
-	    }
-	    coverage_file << "]\n"
-	                  << "  file: " << coverage_results.response.coverage[i].filename << "\n"
-			  << "  lines: [";
-	    for (int j = 0; j < coverage_results.response.coverage[i].lines.size(); ++j) {
-	      coverage_file << coverage_results.response.coverage[i].lines[j];
-	      if (j+1 < coverage_results.response.coverage[i].lines.size())
-	        coverage_file << ", ";
-	    }
-	    coverage_file << "]\n"
-	                  << "  sum: "
-			  << coverage_results.response.coverage[i].lines.size()
-			  << "\n";
-	    }
-        }
-        else
-          ROS_ERROR("Unknown coverage log format!");
-      coverage_file.close();
-      }
-      else
-      {
-        ROS_ERROR("Flush call failed!");
-      }
+  std::string spreadMessageToYamlString(std::string name, std::map<std::string, int> args) {
+    std::string paramString = "name: " + name;
+    auto it = args.begin();
+    while (it != args.end()) {
+      paramString += "\n";
+      ROS_INFO_STREAM("Param: " << it->first << " : " << std::to_string(it->second));
+      paramString += it->first + ": " + std::to_string(it->second);
+      it++;
     }
-    return true;
+    return paramString;
   }
 
   void receiveMessage(std::string name, std::map<std::string, int> args) {
     ROS_INFO_STREAM("Received a message with name '" << name << "'");
-    flushCoverage(name, args, "PRE");
-    if (name.find("goto") != std::string::npos)
-    {
-      // "goto" sync
-      ROS_DEBUG("goto sync handler!");
-      std::string waypoint = boost::lexical_cast<std::string>(args["waypoint"]);
-      int mode = 1;
-      if (args.count("mode") == 1)
-        mode = args["mode"];
-      std::string node_name = node_map_[waypoint];
-      std::string robot_name = robot_name_;
-      if(node_name != "")
-      {
-        actionlib::SimpleClientGoalState state(actionlib::SimpleClientGoalState::PENDING);
-        std::map<std::string, int> vars;
-        if (mode == 1) // topological_navigation mode
-        {
-          topological_navigation::GotoNodeGoal goal;
-          goal.target = node_name;
-          ROS_INFO("Goal node = %s", node_name.c_str());
-          if (ac_topological_.isServerConnected())
-          {
-            ac_topological_.sendGoal(goal);
-            ac_topological_.waitForResult();
-            state = ac_topological_.getState();
-          }
-          else {
-            while (!ac_topological_.isServerConnected()) {
-              ROS_ERROR("Topological_navigation action server not connected! Waiting for server (10 s)...");
-              ac_topological_.waitForServer(ros::Duration(10, 0));
-            }
-            receiveMessage(name, args); // Call self to retry
-            return;
-          }
-        }
-        else
-        {
-          move_base_msgs::MoveBaseGoal goal;
-          double x, y;
-          nh_.getParam("/test_adapter/nodes/" + node_name + "/x", x);
-          nh_.getParam("/test_adapter/nodes/" + node_name + "/y", y);
-          goal.target_pose.header.frame_id = "map";
-          goal.target_pose.pose.position.x = x;
-          goal.target_pose.pose.position.y = y;
-          goal.target_pose.pose.position.z = 0;
-          goal.target_pose.pose.orientation.x = 0;
-          goal.target_pose.pose.orientation.y = 0;
-          goal.target_pose.pose.orientation.z = 0;
-          goal.target_pose.pose.orientation.w = 1;
-          ROS_INFO("Goal. Node %s, x: %.3f  y: %.3f", node_name.c_str(), x, y);
-          if (ac_movebase_.isServerConnected())
-          {
-            ac_movebase_.sendGoal(goal);
-            ac_movebase_.waitForResult();
-            state = ac_movebase_.getState();
-          }
-          else {
-            while (!ac_movebase_.isServerConnected()) {
-              ROS_ERROR("Move_base action server not connected! Waiting for server (10 s)...");
-              ac_movebase_.waitForServer(ros::Duration(10, 0));
-            }
-            receiveMessage(name, args); // Call self to retry
-            return;
-          }
-        }
-        ROS_INFO("Action finished with state = %s", state.toString().c_str());
-        if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-          vars["value"] = 1; // 1 == SUCCESS
-        }
-        else
-        {
-          vars["value"] = -1; // -1 == FAIL
-          ROS_WARN("Action result was not SUCCEEDED!");
-        }
-        testAdapter_->sendMessage(sync_output_.c_str(), vars);
-      }
-      else
-      {
-        ROS_ERROR_STREAM("Unknown goal waypoint (" << waypoint << ")! Sync ignored!");
-      }
+
+    if (std::find(success_outputs_.begin(), success_outputs_.end(), name) != success_outputs_.end()) return;
+    if (std::find(failure_outputs_.begin(), failure_outputs_.end(), name) != failure_outputs_.end()) return;
+
+    std::vector<std::string>::iterator it = std::find(sync_inputs_.begin(), sync_inputs_.end(), name);
+    if (it == sync_inputs_.end()) return;
+    int index = std::distance(sync_inputs_.begin(), it);
+
+    testit_dtron_adapter::HandleSpreadMessage srv;
+    std::string message = spreadMessageToYamlString(name, args);
+    srv.request.input = message;
+    ROS_INFO_STREAM("Spread message yaml string \n" << message);
+    std::string sync_output;
+    ROS_INFO_STREAM("Waiting for handle spread message service");
+    handle_spread_message_client_.waitForExistence();
+    bool call_success = handle_spread_message_client_.call(srv);
+    ROS_INFO_STREAM("Call status: " << call_success);
+    if (call_success && (bool)srv.response.response) {
+      sync_output = success_outputs_[index];
+    } else {
+      sync_output = failure_outputs_[index];
     }
-    else if (name.find("moveto") != std::string::npos)
-    {
-      // "moveto" sync
-      ROS_DEBUG("moveto sync handler!");
-      int x = boost::lexical_cast<int>(args["x"]);
-      int y = boost::lexical_cast<int>(args["y"]);
-      int a = boost::lexical_cast<int>(args["a"]);
-      move_base_msgs::MoveBaseGoal goal;
-      double dx, dy, da;
-      dx = ((double)x) / 10.0;
-      dy = ((double)y) / 10.0;
-      da = ((double)a) / 10.0;
-      goal.target_pose.header.frame_id = "map";
-      goal.target_pose.pose.position.x = dx;
-      goal.target_pose.pose.position.y = dy;
-      goal.target_pose.pose.position.z = 0;
-      tf::Quaternion q = tf::createQuaternionFromRPY(0, 0, da);
-      tf::quaternionTFToMsg(q, goal.target_pose.pose.orientation);
-      ROS_INFO("Goal x: %.2f  y: %.2f  a: %.2f", dx, dy, da);
-      if (ac_movebase_.isServerConnected())
-      {
-        ac_movebase_.sendGoal(goal);
-        ac_movebase_.waitForResult();
-        actionlib::SimpleClientGoalState state = ac_movebase_.getState();
-        ROS_INFO("Action finished with state = %s", state.toString().c_str());
-        std::map<std::string, int> vars;
-        if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
-        {
-          vars["value"] = 1; // 1 == SUCCESS
-        }
-        else
-        {
-          vars["value"] = -1; // -1 == FAIL
-          ROS_ERROR("Action result was not SUCCEEDED!");
-        }
-        testAdapter_->sendMessage(sync_output_.c_str(), vars);
-      }
-      else
-      {
-        ROS_ERROR("Move_base action server not connected!");
-      }
-    }
-    else if (name.find("object_detect") != std::string::npos)
-    {
-      // "object_detect" sync
-      ROS_INFO("object_detect sync handler!");
-      std::map<std::string, int> vars;
-      if (object_detected_)
-        vars["value"] = 2; // detected == 2
-      else
-        vars["value"] = 1; // not detected == 1
-      testAdapter_->sendMessage(sync_output_.c_str(), vars);
-    }
-    flushCoverage(name, args, "POST");
-    ROS_INFO("Finished message processing.");
+
+    std::map<std::string, int> vars;
+    ROS_INFO_STREAM("Sending response: " << sync_output);
+    testAdapter_->sendMessage(sync_output.c_str(), vars);
   }
 };
+
+std::vector<std::string> add_to_vect_from_param(ros::NodeHandle &nh, std::vector<const char*> &to, std::string from) {
+  std::vector<std::string> input;
+  nh.getParam(from, input);
+  for (std::vector<std::string>::const_iterator it = input.begin(); it != input.end(); ++it)
+  {
+    to.push_back(it->c_str());
+  }
+  return input;
+}
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "test_adapter");
@@ -528,46 +331,11 @@ int main(int argc, char** argv) {
   std::string robot_name = argv[1];
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  bool coverage_enabled;
-  nh.param<bool>("/test_adapter/coverage/enabled", coverage_enabled, false);
-  if (coverage_enabled)
-    ROS_INFO("Adapter is configured to record coverage.");
-  else
-    ROS_INFO("Adapter is configured to NOT record coverage.");
-  std::string coverage_format;
-  nh.param<std::string>("/test_adapter/coverage/format", coverage_format, "yaml");
-  std::string coverage_output;
-  nh.param<std::string>("/test_adapter/coverage/output", coverage_output, "");
-  if (coverage_output == "")
-    ROS_WARN("Coverage results output directory not defined (using working directory)!");
-  else
-    ROS_INFO_STREAM("Adapter is recording coverage log to directory '" << coverage_output << "'");
-  struct stat buffer;
-  if (stat (coverage_output.c_str(), &buffer) != 0)
-  {
-    ROS_ERROR_STREAM("Coverage log directory does not exist! Attempting to create...");
-    std::system(("mkdir -p " + coverage_output + " && chmod -R 777 " + coverage_output).c_str());
-  }
-
-  std::string proxy_suffix;
-  nh.param<std::string>("/test_adapter/proxy_suffix", proxy_suffix, "");
-
   std::vector<const char*> groups;
-  std::vector<std::string> sync_input;
-  nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/input", sync_input);
-  for (std::vector<std::string>::const_iterator it = sync_input.begin(); it != sync_input.end(); ++it)
-  {
-    groups.push_back(it->c_str());
-  }
-  std::string sync_output;
-  nh.getParam("/test_adapter/"+robot_name+"/dtron/sync/output", sync_output);
-  groups.push_back(sync_output.c_str());
-  std::string goal_topic;
-  nh.getParam("/test_adapter/"+robot_name+"/goal", goal_topic);
-  std::string waypoint_goal_topic;
-  nh.getParam("/test_adapter/"+robot_name+"/topological_goal", waypoint_goal_topic);
-  std::string object_detector_topic;
-  nh.param<std::string>("/test_adapter/"+robot_name+"/object_detector", object_detector_topic, "object_detector");
+  auto sync_inputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/input");
+  auto success_outputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/output/success");
+  auto failure_outputs = add_to_vect_from_param(nh, groups, "/test_adapter/"+robot_name+"/dtron/sync/output/failure");
+
   std::string ip;
   std::string port;
   std::string username;
@@ -579,7 +347,8 @@ int main(int argc, char** argv) {
     ROS_ERROR("Spread parameters not configured, unable to launch adapter!");
     return 1;
   }
-  Adapter adapter(nh, goal_topic, sync_input, sync_output, waypoint_goal_topic, robot_name, object_detector_topic, coverage_enabled, coverage_format, coverage_output, proxy_suffix);
+
+  Adapter adapter(nh, sync_inputs, success_outputs, failure_outputs, robot_name);
   dtron_test_adapter::TestAdapter testAdapter(nh,  (port + "@" + ip).c_str(), username.c_str(), groups, boost::bind(&Adapter::receiveMessage, &adapter, _1, _2));
   adapter.setTestAdapter(testAdapter);
   ROS_INFO("Test adapter running...");
